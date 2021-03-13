@@ -1,0 +1,84 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  cleanliness:
+    name: Cleanliness Checks
+    runs-on: ubuntu-18.04
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@v2
+
+      - name: 📥 Install Doxygen and Graphviz
+        run: sudo apt-get -y install doxygen graphviz
+
+      - name: 📥 Install cspell
+        run: sudo npm install -g cspell@4.0.38
+
+      - name: 🧹 Lint
+        run: echo "No command for this yet"
+
+      - name: 🔤 Spellcheck
+        run: echo "No command for this yet"
+
+      - name: 📖 Documentation
+        run: echo "No command for this yet"
+
+      - name: 📃 Check Variable Names
+        run: echo "No command for this yet"
+
+      - name: 🚀 Deploy
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        # Only Deploy to gh-pages on master branch event
+        if: ${{ github.ref == 'refs/heads/master' &&
+                github.event_name == 'push' }}
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: .
+          CLEAN: true
+
+  unit_tests:
+    name: Unit Tests + Coverage
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@v2
+
+      - name: 📥 Install Cpp Coveralls
+        run: pip install --user cpp-coveralls
+
+      - name: 🧪 Run Tests
+        run: echo "no test script yet"
+
+      - name: 🩺 Code Coverage
+        run: echo "no coverage script yet"
+
+      - name: 🚀 Send Coverage to Codecov.io
+        uses: codecov/codecov-action@v1
+        with:
+          file: projects/continuous_integration/build/test/coverage/coverage.xml
+          name: Full Platform Unit Tests
+
+      - name: 🗄️ Archive code coverage results
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: projects/continuous_integration/build/test/coverage/coverage.xml
+
+  examples_checks:
+    name: Build Examples
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@v2
+
+      - name: 🛠️ Build Examples
+        run: echo "No build examples script yet"
