@@ -53,7 +53,10 @@ extern "C"
 
     // When the following line is hit, the variables contain the register values
     // Use a JTAG debugger to inspect these variables
-    sjsu::Halt();
+    while (1)
+    {
+      continue;
+    }
   }
 
   /// Hard Fault, all classes of Fault
@@ -85,7 +88,7 @@ extern "C"
 
   // External declaration for the pointer to the stack top from the linker
   // script
-  extern void StackTop(void);
+  extern void _stack_top(void);
 
   // Reset entry point for your code.
   // Sets up a simple runtime environment and initializes the C/C++ library.
@@ -97,7 +100,7 @@ extern "C"
     // bootloader function launches this ISR manually, but it never returns thus
     // it never cleans up the memory it uses. To get that memory back, we have
     // to manually move the stack pointers back to the top of stack.
-    const uint32_t kTopOfStack = reinterpret_cast<intptr_t>(&StackTop);
+    const uint32_t kTopOfStack = reinterpret_cast<intptr_t>(&_stack_top);
     sjsu::cortex::__set_PSP(kTopOfStack);
     sjsu::cortex::__set_MSP(kTopOfStack);
 
@@ -110,7 +113,6 @@ extern "C"
       SCB->CPACR = (SCB->CPACR | ((0b11 << 20) |   // set CP10 Full Access
                                   (0b11 << 22)));  // set CP11 Full Access
     }
-
 
     sjsu::InitializeDataSection();
     sjsu::InitializeBssSection();
