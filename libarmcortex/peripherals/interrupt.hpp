@@ -80,6 +80,17 @@ class InterruptController final : public sjsu::InterruptController
         interrupt_vector_table.begin());
   }
 
+  constexpr InterruptController()
+      : interrupt_vector_table{}, external_interrupt_handlers{}
+  {
+    // Will fill the interrupt handler and vector table with the default
+    // contents.
+    std::fill_n(interrupt_vector_table.begin(), kTableSize, LookupHandler);
+    std::fill(external_interrupt_handlers.begin(),
+              external_interrupt_handlers.end(),
+              UnregisteredHandler);
+  }
+
   void ModuleInitialize() override
   {
     global_controller = this;

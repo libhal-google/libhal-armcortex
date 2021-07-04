@@ -79,7 +79,7 @@ extern "C"
 
   // External declaration for the pointer to the stack top from the linker
   // script
-  extern void _stack_top(void);
+  extern void __stack(void);
 
   // Reset entry point for your code.
   // Sets up a simple runtime environment and initializes the C/C++ library.
@@ -91,7 +91,7 @@ extern "C"
     // bootloader function launches this ISR manually, but it never returns thus
     // it never cleans up the memory it uses. To get that memory back, we have
     // to manually move the stack pointers back to the top of stack.
-    const uint32_t kTopOfStack = reinterpret_cast<intptr_t>(&_stack_top);
+    const uint32_t kTopOfStack = reinterpret_cast<intptr_t>(&__stack);
     sjsu::cortex::__set_PSP(kTopOfStack);
     sjsu::cortex::__set_MSP(kTopOfStack);
 
@@ -113,7 +113,7 @@ extern "C"
     if constexpr (!sjsu::build::IsPlatform("host"))
     {
       // Initialisation C++ libraries
-      __libc_init_array();
+      // __libc_init_array();
     }
 
     sjsu::InitializePlatform();
@@ -156,3 +156,5 @@ extern "C"
     /* Not implemented yet */
   }
 }  // extern "C"
+
+REDUCE_NEWLIB_MEMORY_USAGE();
