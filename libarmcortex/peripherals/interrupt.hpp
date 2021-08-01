@@ -130,10 +130,14 @@ class InterruptController final : public sjsu::InterruptController
     }
   }
 
+  const auto & GetInterruptVectorTable()
+  {
+    return interrupt_vector_table;
+  }
+
  private:
   alignas(512) std::array<InterruptVectorAddress,
                           kTableSize> interrupt_vector_table = { nullptr };
-
   std::array<InterruptHandler, kNumberOfInterrupts>
       external_interrupt_handlers = { nullptr };
 
