@@ -1,4 +1,4 @@
-#include "peripherals/cortex/interrupt.hpp"
+#include "interrupt.hpp"
 
 #include <libcore/testing/testing_frameworks.hpp>
 
@@ -29,15 +29,12 @@ TEST_CASE("Testing cortex interrupt")
 
   SECTION("Initialize")
   {
-    for (uint32_t irq = 0; irq < kNumberOfVectors; irq++)
-    {
-      // Setup
-      // Set the active interrupt to
-      local_scb.ICSR = irq;
+    // Exercise
+    test_subject.Initialize();
 
-      // Exercise & Verify
-      CHECK_THROWS(test_subject.LookupHandler());
-    }
+    // Verify
+    CHECK(local_scb.VTOR == static_cast<uint32_t>(reinterpret_cast<intptr_t>(
+                                &test_subject.GetInterruptVectorTable())));
   }
 
   SECTION("Enable")
@@ -48,10 +45,8 @@ TEST_CASE("Testing cortex interrupt")
     // Exercise
     test_subject.Enable({
         .interrupt_request_number = kIRQ,
-        .interrupt_handler =
-            [&callback_was_registered_and_called]() {
-              callback_was_registered_and_called = true;
-            },
+        .interrupt_handler        = [&callback_was_registered_and_called]()
+        { callback_was_registered_and_called = true; },
         .priority = kPriority,
     });
     // Set the active interrupt to kIRQ.

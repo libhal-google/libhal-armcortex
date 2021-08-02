@@ -1,10 +1,8 @@
 // Test for Pin class.
 // Using a test by side effect on the Cortex M4 SysTick register
-#include "peripherals/cortex/system_timer.hpp"
+#include "system_timer.hpp"
 
-#include "platforms/targets/lpc40xx/LPC40xx.h"
 #include <libcore/testing/testing_frameworks.hpp>
-#include "config.hpp"
 
 namespace sjsu::cortex
 {
@@ -42,8 +40,6 @@ TEST_CASE("Testing ARM Cortex SystemTimer")
   Fake(Method(mock_interrupt_controller, Disable));
   sjsu::InterruptController::SetPlatformController(
       &mock_interrupt_controller.get());
-
-  using ResourceID = sjsu::SystemController::ResourceID;
 
   constexpr uint8_t kExpectedPriority = 3;
   SystemTimer test_subject(ResourceID::Define<0>(), kExpectedPriority);
@@ -116,26 +112,6 @@ TEST_CASE("Testing ARM Cortex SystemTimer")
     CHECK(0xBEEF == local_systick.VAL);
     Verify(Method(mock_interrupt_controller, Enable)).Never();
   }
-
-  // SECTION("Disable Timer should clear all bits")
-  // {
-  //   // Setup
-  //   // Source: "UM10562 LPC408x/407x User manual" table 553 page 703
-  //   constexpr uint8_t kEnableMask    = 0b0001;
-  //   constexpr uint8_t kTickIntMask   = 0b0010;
-  //   constexpr uint8_t kClkSourceMask = 0b0100;
-  //   constexpr uint32_t kMask = kEnableMask | kTickIntMask | kClkSourceMask;
-  //   local_systick.CTRL       = kMask;
-  //   local_systick.LOAD       = 1000;
-
-  //   // Exercise
-  //   test_subject.PowerDown();
-
-  //   // Verify
-  //   // Verify: The control should not change as unfortunately, the SystemTick
-  //   //         Timer will not come back after being enabled.
-  //   CHECK(kMask == local_systick.CTRL);
-  // }
 
   SECTION("Setting Callback()")
   {
