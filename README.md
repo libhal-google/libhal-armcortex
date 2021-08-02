@@ -1,3 +1,8 @@
-# libbasis
+# libarmcortex
 
-The basis library for all other SJSU-Dev2 libraries
+[![.github/workflows/presubmit.yml](https://github.com/SJSU-Dev2/libarmcortex/actions/workflows/presubmit.yml/badge.svg)](https://github.com/SJSU-Dev2/libarmcortex/actions/workflows/presubmit.yml)
+
+Drivers for ARM cortex-m series microcontrollers. Currently supports:
+
+* M3
+* M4F
