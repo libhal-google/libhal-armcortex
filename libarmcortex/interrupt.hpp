@@ -1,6 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
 #include <cstdint>
+#include <span>
 
 namespace cortex_m {
 /// Structure type to access the System Control Block (SCB).
