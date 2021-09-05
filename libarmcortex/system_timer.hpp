@@ -10,13 +10,13 @@ namespace cortex_m {
 struct system_tick_t
 {
   /// Offset: 0x000 (R/W)  SysTick Control and Status Register
-  virtual uint32_t CTRL;
+  volatile uint32_t CTRL;
   /// Offset: 0x004 (R/W)  SysTick Reload Value Register
-  virtual uint32_t LOAD;
+  volatile uint32_t LOAD;
   /// Offset: 0x008 (R/W)  SysTick Current Value Register
-  virtual uint32_t VAL;
+  volatile uint32_t VAL;
   /// Offset: 0x00C (R/ )  SysTick Calibration Register
-  const virtual uint32_t CALIB;
+  const volatile uint32_t CALIB;
 };
 
 class system_timer
@@ -71,5 +71,4 @@ public:
 
   void disable() { system_tick->CTRL = 0; }
 };
-} // namespace cortex
-} // namespace sjsu
+}

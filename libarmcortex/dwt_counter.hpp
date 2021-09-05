@@ -70,11 +70,14 @@ struct core_debug_registers_t
 class dwt_counter
 {
 public:
+  static constexpr unsigned core_trace_enable = 1 << 24U;
+  static constexpr unsigned enable_dwt_cycle_count = 1 << 0;
+
   /// Address of the hardware DWT registers
-  constexpr intptr_t dwt_address = 0xE0001000UL;
+  static constexpr intptr_t dwt_address = 0xE0001000UL;
 
   /// Address of the Cortex M CoreDebug module
-  constexpr intptr_t core_debug_address = 0xE000EDF0UL;
+  static constexpr intptr_t core_debug_address = 0xE000EDF0UL;
 
   /// Pointer to the DWT peripheral
   static inline auto* dwt = reinterpret_cast<dwt_registers_t*>(0xE0001000UL);
@@ -86,8 +89,8 @@ public:
   static void setup_for_unittesting()
   {
     // Dummy registers for unit testing
-    static const dwt_registers_t dummy_dwt{};
-    static const core_debug_registers_t dummy_core{};
+    static dwt_registers_t dummy_dwt{};
+    static core_debug_registers_t dummy_core{};
 
     // Replace the address of the peripheral pointer with the dummy structure so
     // that they can be inspected during unit tests.
@@ -96,14 +99,11 @@ public:
   }
 
   /// Start the counter
-  void start() override
+  void start()
   {
-    constexpr unsigned CoreDebug_DEMCR_TRCENA_Msk = 1 << 24U;
-    constexpr unsigned DWT_CTRL_CYCCNTENA_Msk = 1 << 0;
-
-    core->demcr = (core->demcr | CoreDebug_DEMCR_TRCENA_Msk);
+    core->demcr = (core->demcr | core_trace_enable);
     dwt->cyccnt = 0;
-    dwt->ctrl = (dwt->ctrl | DWT_CTRL_CYCCNTENA_Msk);
+    dwt->ctrl = (dwt->ctrl | enable_dwt_cycle_count);
   }
 
   /// Return the current number of ticks. Note that this is typically 2x the

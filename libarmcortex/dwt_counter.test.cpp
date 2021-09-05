@@ -1,44 +1,29 @@
 #include "dwt_counter.hpp"
 
-#include <libcore/testing/testing_frameworks.hpp>
+#include <boost/ut.hpp>
 
-namespace sjsu::cortex
-{
-TEST_CASE("Testing ARM Cortex Data Watchdog Trace Counter")
-{
-  DWT_Type local_dwt = {
-    .PCSR = 0,
+using namespace boost::ut;
+using namespace cortex_m;
+
+suite dwt_test = []() {
+  dwt_counter test_subject;
+  test_subject.setup_for_unittesting();
+
+  "dwt_counter::start()"_test = [&]() {
+    test_subject.start();
+
+    expect(that % test_subject.core_trace_enable == test_subject.core->demcr);
+    expect(that % 0 == test_subject.dwt->cyccnt);
+    expect(that % test_subject.enable_dwt_cycle_count ==
+           test_subject.dwt->ctrl);
   };
-  CoreDebug_Type local_core;
 
-  testing::ClearStructure(&local_dwt);
-  testing::ClearStructure(&local_core);
-
-  DwtCounter::dwt  = &local_dwt;
-  DwtCounter::core = &local_core;
-
-  DwtCounter test_subject;
-
-  SECTION("Initialize Debug Counter")
-  {
-    test_subject.Initialize();
-
-    CHECK(CoreDebug_DEMCR_TRCENA_Msk == local_core.DEMCR);
-    CHECK(0 == local_dwt.CYCCNT);
-    CHECK(DWT_CTRL_CYCCNTENA_Msk == local_dwt.CTRL);
-  }
-
-  SECTION("Get Count")
-  {
-    local_dwt.CYCCNT = 0;
-    CHECK(0 == test_subject.GetCount());
-    local_dwt.CYCCNT = 17;
-    CHECK(17 == test_subject.GetCount());
-    local_dwt.CYCCNT = 1024;
-    CHECK(1024 == test_subject.GetCount());
-  }
-
-  DwtCounter::dwt  = DWT;
-  DwtCounter::core = CoreDebug;
-}
-}  // namespace sjsu::cortex
+  "dwt_counter::count()"_test = [&]() {
+    test_subject.dwt->cyccnt = 0;
+    expect(that % 0 == test_subject.count());
+    test_subject.dwt->cyccnt = 17;
+    expect(that % 17 == test_subject.count());
+    test_subject.dwt->cyccnt = 1024;
+    expect(that % 1024 == test_subject.count());
+  };
+};
