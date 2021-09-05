@@ -1,0 +1,113 @@
+#pragma once
+
+#include <cinttypes>
+
+namespace cortex_m {
+
+/// Structure type to access the Data Watchpoint and Trace Register (DWT).
+struct dwt_registers_t
+{
+  /// Offset: 0x000 (R/W)  Control Register
+  volatile uint32_t ctrl;
+  /// Offset: 0x004 (R/W)  Cycle Count Register
+  volatile uint32_t cyccnt;
+  /// Offset: 0x008 (R/W)  CPI Count Register
+  volatile uint32_t cpicnt;
+  /// Offset: 0x00C (R/W)  Exception Overhead Count Register
+  volatile uint32_t exccnt;
+  /// Offset: 0x010 (R/W)  Sleep Count Register
+  volatile uint32_t sleepcnt;
+  /// Offset: 0x014 (R/W)  LSU Count Register
+  volatile uint32_t lsucnt;
+  /// Offset: 0x018 (R/W)  Folded-instruction Count Register
+  volatile uint32_t foldcnt;
+  /// Offset: 0x01C (R/ )  Program Counter Sample Register
+  volatile const uint32_t pcsr;
+  /// Offset: 0x020 (R/W)  Comparator Register 0
+  volatile uint32_t comp0;
+  /// Offset: 0x024 (R/W)  Mask Register 0
+  volatile uint32_t mask0;
+  /// Offset: 0x028 (R/W)  Function Register 0
+  volatile uint32_t function0;
+  uint32_t reserved0[1U];
+  /// Offset: 0x030 (R/W)  Comparator Register 1
+  volatile uint32_t comp1;
+  /// Offset: 0x034 (R/W)  Mask Register 1
+  volatile uint32_t mask1;
+  /// Offset: 0x038 (R/W)  Function Register 1
+  volatile uint32_t function1;
+  uint32_t reserved1[1U];
+  /// Offset: 0x040 (R/W)  Comparator Register 2
+  volatile uint32_t comp2;
+  /// Offset: 0x044 (R/W)  Mask Register 2
+  volatile uint32_t mask2;
+  /// Offset: 0x048 (R/W)  Function Register 2
+  volatile uint32_t function2;
+  uint32_t reserved2[1U];
+  /// Offset: 0x050 (R/W)  Comparator Register 3
+  volatile uint32_t comp3;
+  /// Offset: 0x054 (R/W)  Mask Register 3
+  volatile uint32_t mask3;
+  /// Offset: 0x058 (R/W)  Function Register 3
+  volatile uint32_t function3;
+};
+
+/// Structure type to access the Core Debug Register (CoreDebug)
+struct core_debug_registers_t
+{
+  /// Offset: 0x000 (R/W)  Debug Halting Control and Status Register
+  volatile uint32_t dhcsr;
+  /// Offset: 0x004 ( /W)  Debug Core Register Selector Register
+  volatile uint32_t dcrsr;
+  /// Offset: 0x008 (R/W)  Debug Core Register Data Register
+  volatile uint32_t dcrdr;
+  /// Offset: 0x00C (R/W)  Debug Exception and Monitor Control Register
+  volatile uint32_t demcr;
+};
+
+/// The DWT (Debug Watch and Trace) module in the Cortex M series of processors
+/// has a number of debugging
+class dwt_counter
+{
+public:
+  /// Address of the hardware DWT registers
+  constexpr intptr_t dwt_address = 0xE0001000UL;
+
+  /// Address of the Cortex M CoreDebug module
+  constexpr intptr_t core_debug_address = 0xE000EDF0UL;
+
+  /// Pointer to the DWT peripheral
+  static inline auto* dwt = reinterpret_cast<dwt_registers_t*>(0xE0001000UL);
+
+  /// Pointer to the Core Debug module
+  static inline auto* core =
+    reinterpret_cast<core_debug_registers_t*>(core_debug_address);
+
+  static void setup_for_unittesting()
+  {
+    // Dummy registers for unit testing
+    static const dwt_registers_t dummy_dwt{};
+    static const core_debug_registers_t dummy_core{};
+
+    // Replace the address of the peripheral pointer with the dummy structure so
+    // that they can be inspected during unit tests.
+    dwt = &dummy_dwt;
+    core = &dummy_core;
+  }
+
+  /// Start the counter
+  void start() override
+  {
+    constexpr unsigned CoreDebug_DEMCR_TRCENA_Msk = 1 << 24U;
+    constexpr unsigned DWT_CTRL_CYCCNTENA_Msk = 1 << 0;
+
+    core->demcr = (core->demcr | CoreDebug_DEMCR_TRCENA_Msk);
+    dwt->cyccnt = 0;
+    dwt->ctrl = (dwt->ctrl | DWT_CTRL_CYCCNTENA_Msk);
+  }
+
+  /// Return the current number of ticks. Note that this is typically 2x the
+  /// CPU frequency as it counts on rising and falling edges.
+  uint32_t count() { return dwt->cyccnt; }
+};
+} // namespace cortexm
