@@ -5,4 +5,5 @@
 Drivers for ARM cortex-m series microcontrollers. Currently supports:
 
 * M3
-* M4F
+* M4
+* M7

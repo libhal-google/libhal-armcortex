@@ -13,6 +13,7 @@ conan_basic_setup(TARGETS)
 
 # If you set any CMAKE_ variables, that can go here.
 # (But usually don't do this, except maybe for C++ standard)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # Find packages go here.
 
@@ -26,7 +27,10 @@ add_library(libarmcortex
             libarmcortex/dwt_counter.test.cpp
             libarmcortex/system_timer.test.cpp
             libarmcortex/interrupt.test.cpp
-            tests/main.test.cpp)
+            libarmcortex/system_timer.hpp
+            libarmcortex/dwt_counter.hpp
+            libarmcortex/interrupt.hpp
+            libarmcortex/main.test.cpp)
 
 target_include_directories(libarmcortex
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -43,7 +47,7 @@ add_executable(libarmcortex.test.exe
                libarmcortex/system_timer.test.cpp
                libarmcortex/dwt_counter.test.cpp
                libarmcortex/interrupt.test.cpp
-               tests/main.test.cpp)
+               libarmcortex/main.test.cpp)
 
 # Make sure you link your targets with this command. It can also link libraries
 # and even flags, so linking a target that does not exist will not give a

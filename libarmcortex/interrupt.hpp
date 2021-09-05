@@ -90,7 +90,7 @@ public:
   static constexpr intptr_t scb_address = 0xE000'ED00UL;
 
   /// The core interrupts that all cortex m3, m4, m7 processors have
-  static constexpr int core_interrupt_count = 16;
+  static constexpr int core_interrupts = 16;
 
   /// Pointer to Cortex M system control block registers
   static inline auto* scb = reinterpret_cast<scb_registers_t*>(scb_address);
@@ -101,8 +101,32 @@ public:
   /// Pointer to a statically allocated interrupt vector table
   static inline std::span<interrupt_handler> interrupt_vector_table;
 
-  /// Holds the current_vector that is running
-  static inline int current_vector = 0;
+  class irq_t
+  {
+  public:
+    constexpr irq_t(int p_irq)
+      : m_irq(p_irq)
+    {}
+
+    constexpr irq_t& operator=(int p_irq)
+    {
+      m_irq = p_irq;
+      return *this;
+    }
+
+    constexpr unsigned int register_index() { return m_irq >> 5; }
+    constexpr unsigned int enable_mask() { return 1 << (m_irq & 0x1F); }
+    constexpr unsigned int vector_index() { return m_irq + core_interrupts; }
+    constexpr bool default_enabled() { return m_irq < 0; }
+    constexpr bool is_valid()
+    {
+      const int last_irq = interrupt_vector_table.size() - core_interrupts;
+      return -core_interrupts < m_irq && m_irq < last_irq;
+    }
+
+  private:
+    int m_irq = 0;
+  };
 
   /// Basic interrupt that performs no work
   static void nop() {}
@@ -111,7 +135,8 @@ public:
   static void initialize()
   {
     // Statically allocate a buffer of vectors to be used as the new IVT.
-    static std::array<interrupt_handler, vector_count> vector_buffer{};
+    static constexpr int total_vector_count = vector_count + core_interrupts;
+    static std::array<interrupt_handler, total_vector_count> vector_buffer{};
 
     // Will fill the interrupt handler and vector table with a function that
     // does nothing.
@@ -141,29 +166,36 @@ public:
   /// @brief Enable interrupt base
   ///
   /// @return true if this was successful
-  static bool enable(int irq, interrupt_handler handler)
+  static bool enable(irq_t p_irq, interrupt_handler handler)
   {
-    if (irq >= interrupt_vector_table.size()) {
+    const int last_irq = interrupt_vector_table.size() - core_interrupts;
+
+    // IRQ must be between -16 < irq < last_irq
+    if (!p_irq.is_valid()) {
       return false;
     }
+    interrupt_vector_table[p_irq.vector_index()] = handler;
 
-    interrupt_vector_table[irq + core_interrupt_count] = handler;
-
-    if (irq >= 0) {
-      nvic_enable_irq(irq);
+    if (!p_irq.default_enabled()) {
+      nvic_enable_irq(p_irq);
     }
-
-    return false;
+    return true;
   }
 
-  static bool disable(int irq)
+  static bool disable(irq_t p_irq)
   {
-    if (irq < 0) {
+    const int last_irq = interrupt_vector_table.size() - core_interrupts;
+
+    // IRQ must be between -16 < irq < last_irq
+    if (!p_irq.is_valid()) {
       return false;
     }
+    interrupt_vector_table[p_irq.vector_index()] = nop;
 
-    nvic_disable_irq(irq);
-    interrupt_vector_table[irq + core_interrupt_count] = nop;
+    if (!p_irq.default_enabled()) {
+      nvic_disable_irq(p_irq);
+    }
+    return true;
   }
 
   static const auto& get_interrupt_vector_table()
@@ -171,29 +203,44 @@ public:
     return interrupt_vector_table;
   }
 
+  static const bool verify_vector_enabled(irq_t p_irq,
+                                          interrupt_handler p_handler)
+  {
+    if (p_irq.is_valid()) {
+      bool check_vector, check_is_enabled;
+      check_vector = interrupt_vector_table[p_irq.vector_index()] == p_handler;
+
+      if (p_irq.default_enabled()) {
+        check_is_enabled = true;
+      } else {
+        check_is_enabled =
+          (nvic->ISER[p_irq.register_index()] & p_irq.enable_mask());
+      }
+
+      return check_vector && check_is_enabled;
+    }
+    return true;
+  }
+
 protected:
   /// Enable External Interrupt
   /// Enables a device-specific interrupt in the NVIC interrupt controller.
   ///
   /// @param irq - External interrupt number. Value cannot be negative.
-  static void nvic_enable_irq(int irq)
+  static void nvic_enable_irq(irq_t p_irq)
   {
-    unsigned index = irq >> 5;
-    unsigned bit_position = irq & 0x1F;
-
-    nvic->ISER[index] = 1 << bit_position;
+    auto* interrupt_enable = &nvic->ISER[p_irq.register_index()];
+    *interrupt_enable = *interrupt_enable | p_irq.enable_mask();
   }
 
   /// Disable External Interrupt
   /// Disables a device-specific interrupt in the NVIC interrupt controller.
   ///
   /// @param irq - External interrupt number. Value cannot be negative.
-  static void nvic_disable_irq(int irq)
+  static void nvic_disable_irq(irq_t p_irq)
   {
-    unsigned index = irq >> 5;
-    unsigned bit_position = irq & 0x1F;
-
-    nvic->ICER[index] = 1 << bit_position;
+    auto* interrupt_clear = &nvic->ICER[p_irq.register_index()];
+    *interrupt_clear = *interrupt_clear | p_irq.enable_mask();
   }
 };
 } // namespace cortex_m
