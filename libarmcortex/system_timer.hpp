@@ -51,7 +51,7 @@ public:
 
   void attach_interrupt(interrupt_handler system_tick_handler)
   {
-    cortex_m::interrupt::enable(system_tick_irq, system_tick_handler);
+    cortex_m::interrupt(system_tick_irq).enable(system_tick_handler);
   }
 
   void reload_value(uint32_t reload_value) { system_tick->LOAD = reload_value; }

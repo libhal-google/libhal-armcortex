@@ -19,8 +19,8 @@ suite system_timer_test = []() {
     test_subject.attach_interrupt(dummy_handler);
 
     // Verify
-    expect(interrupt::verify_vector_enabled(test_subject.system_tick_irq,
-                                            dummy_handler));
+    expect(interrupt(test_subject.system_tick_irq)
+             .verify_vector_enabled(dummy_handler));
   };
 
   should("set system_timer::reload_value()") = [&] {

@@ -151,6 +151,15 @@ public:
     scb->VTOR = reinterpret_cast<intptr_t>(vector_buffer.data());
   }
 
+  interrupt(irq_t p_irq)
+    : m_irq(p_irq)
+  {
+    // TODO: MAJOR change this to only do this when the platform is unittest.
+    if constexpr (true) {
+      setup_for_unittesting();
+    }
+  }
+
   static void setup_for_unittesting()
   {
     // Dummy registers for unit testing
@@ -166,34 +175,36 @@ public:
   /// @brief Enable interrupt base
   ///
   /// @return true if this was successful
-  static bool enable(irq_t p_irq, interrupt_handler handler)
+  bool enable(interrupt_handler handler)
   {
     const int last_irq = interrupt_vector_table.size() - core_interrupts;
 
     // IRQ must be between -16 < irq < last_irq
-    if (!p_irq.is_valid()) {
+    if (!m_irq.is_valid()) {
       return false;
     }
-    interrupt_vector_table[p_irq.vector_index()] = handler;
 
-    if (!p_irq.default_enabled()) {
-      nvic_enable_irq(p_irq);
+    interrupt_vector_table[m_irq.vector_index()] = handler;
+
+    if (!m_irq.default_enabled()) {
+      nvic_enable_irq();
     }
     return true;
   }
 
-  static bool disable(irq_t p_irq)
+  bool disable()
   {
     const int last_irq = interrupt_vector_table.size() - core_interrupts;
 
     // IRQ must be between -16 < irq < last_irq
-    if (!p_irq.is_valid()) {
+    if (!m_irq.is_valid()) {
       return false;
     }
-    interrupt_vector_table[p_irq.vector_index()] = nop;
 
-    if (!p_irq.default_enabled()) {
-      nvic_disable_irq(p_irq);
+    interrupt_vector_table[m_irq.vector_index()] = nop;
+
+    if (!m_irq.default_enabled()) {
+      nvic_disable_irq();
     }
     return true;
   }
@@ -203,18 +214,17 @@ public:
     return interrupt_vector_table;
   }
 
-  static const bool verify_vector_enabled(irq_t p_irq,
-                                          interrupt_handler p_handler)
+  const bool verify_vector_enabled(interrupt_handler p_handler)
   {
-    if (p_irq.is_valid()) {
+    if (m_irq.is_valid()) {
       bool check_vector, check_is_enabled;
-      check_vector = interrupt_vector_table[p_irq.vector_index()] == p_handler;
+      check_vector = interrupt_vector_table[m_irq.vector_index()] == p_handler;
 
-      if (p_irq.default_enabled()) {
+      if (m_irq.default_enabled()) {
         check_is_enabled = true;
       } else {
         check_is_enabled =
-          (nvic->ISER[p_irq.register_index()] & p_irq.enable_mask());
+          (nvic->ISER[m_irq.register_index()] & m_irq.enable_mask());
       }
 
       return check_vector && check_is_enabled;
@@ -227,20 +237,22 @@ protected:
   /// Enables a device-specific interrupt in the NVIC interrupt controller.
   ///
   /// @param irq - External interrupt number. Value cannot be negative.
-  static void nvic_enable_irq(irq_t p_irq)
+  void nvic_enable_irq()
   {
-    auto* interrupt_enable = &nvic->ISER[p_irq.register_index()];
-    *interrupt_enable = *interrupt_enable | p_irq.enable_mask();
+    auto* interrupt_enable = &nvic->ISER[m_irq.register_index()];
+    *interrupt_enable = *interrupt_enable | m_irq.enable_mask();
   }
 
   /// Disable External Interrupt
   /// Disables a device-specific interrupt in the NVIC interrupt controller.
   ///
   /// @param irq - External interrupt number. Value cannot be negative.
-  static void nvic_disable_irq(irq_t p_irq)
+  void nvic_disable_irq()
   {
-    auto* interrupt_clear = &nvic->ICER[p_irq.register_index()];
-    *interrupt_clear = *interrupt_clear | p_irq.enable_mask();
+    auto* interrupt_clear = &nvic->ICER[m_irq.register_index()];
+    *interrupt_clear = *interrupt_clear | m_irq.enable_mask();
   }
+
+  irq_t m_irq;
 };
 } // namespace cortex_m
