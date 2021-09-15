@@ -43,7 +43,7 @@ suite interrupt_test = [] {
       unsigned bit_position = expected_irq & 0x1F;
 
       // Exercise
-      bool success = interrupt::enable(expected_irq, dummy_handler);
+      bool success = interrupt(expected_irq).enable(dummy_handler);
 
       // Verify
       expect(that % success);
@@ -61,7 +61,7 @@ suite interrupt_test = [] {
       unsigned bit_position = expected_irq & 0x1F;
 
       // Exercise
-      bool success = interrupt::enable(expected_irq, dummy_handler);
+      bool success = interrupt(expected_irq).enable(dummy_handler);
 
       // Verify
       expect(that % success);
@@ -78,7 +78,7 @@ suite interrupt_test = [] {
       const int iser_size = sizeof(old_nvic.ISER) / sizeof(old_nvic.ISER[0]);
 
       // Exercise
-      bool success = interrupt::enable(expected_irq, dummy_handler);
+      bool success = interrupt(expected_irq).enable(dummy_handler);
 
       // Verify
       expect(that % success);
@@ -105,7 +105,7 @@ suite interrupt_test = [] {
       interrupt::initialize<expected_interrupt_count>();
 
       // Exercise
-      bool success = interrupt::enable(expected_irq, dummy_handler);
+      bool success = interrupt(expected_irq).enable(dummy_handler);
 
       // Verify
       expect(that % !success);
@@ -122,15 +122,15 @@ suite interrupt_test = [] {
     };
   };
 
-  should("interrupt::disable()") = [&] {
-    should("interrupt::disable(5)") = [&]() {
+  should("interrupt(expected_irq).disable()") = [&] {
+    should("interrupt(expected_irq).::disable(5)") = [&]() {
       // Setup
       static constexpr int expected_irq = 5;
       unsigned index = expected_irq >> 5;
       unsigned bit_position = expected_irq & 0x1F;
 
       // Exercise
-      bool success = interrupt::disable(expected_irq);
+      bool success = interrupt(expected_irq).disable();
 
       // Verify
       expect(that % success);
@@ -141,14 +141,14 @@ suite interrupt_test = [] {
       expect((1 << bit_position) & interrupt::nvic->ICER[index]);
     };
 
-    should("interrupt::disable(17)") = [&]() {
+    should("interrupt(expected_irq).::disable(17)") = [&]() {
       // Setup
       static constexpr int expected_irq = 17;
       unsigned index = expected_irq >> 5;
       unsigned bit_position = expected_irq & 0x1F;
 
       // Exercise
-      bool success = interrupt::disable(expected_irq);
+      bool success = interrupt(expected_irq).disable();
 
       // Verify
       expect(that % success);
@@ -158,14 +158,14 @@ suite interrupt_test = [] {
       expect((1 << bit_position) & interrupt::nvic->ICER[index]);
     };
 
-    should("interrupt::disable(-5)") = [&]() {
+    should("interrupt(expected_irq).disable(-5)") = [&]() {
       // Setup
       static constexpr int expected_irq = -5;
       const auto old_nvic = *interrupt::nvic;
       const int ICER_size = sizeof(old_nvic.ICER) / sizeof(old_nvic.ICER[0]);
 
       // Exercise
-      bool success = interrupt::disable(expected_irq);
+      bool success = interrupt(expected_irq).disable();
 
       // Verify
       expect(that % success);
@@ -180,7 +180,7 @@ suite interrupt_test = [] {
       }
     };
 
-    should("interrupt::disable(-20) fail") = [&]() {
+    should("interrupt(expected_irq).disable(-20) fail") = [&]() {
       // Setup
       static constexpr int expected_irq = -20;
       unsigned index = expected_irq >> 5;
@@ -192,7 +192,7 @@ suite interrupt_test = [] {
       interrupt::initialize<expected_interrupt_count>();
 
       // Exercise
-      bool success = interrupt::disable(expected_irq);
+      bool success = interrupt(expected_irq).disable();
 
       // Verify
       expect(that % !success);
