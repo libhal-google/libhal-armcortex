@@ -1,5 +1,7 @@
 #pragma once
 
+#include <libembeddedhal/context.hpp>
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -78,7 +80,7 @@ struct nvic_register_t
 };
 
 /// Used specifically for defining an interrupt vector table of addresses.
-using interrupt_handler = void (*)(void);
+using interrupt_pointer = void (*)(void);
 
 class interrupt
 {
@@ -99,7 +101,7 @@ public:
   static inline auto* nvic = reinterpret_cast<nvic_register_t*>(nvic_address);
 
   /// Pointer to a statically allocated interrupt vector table
-  static inline std::span<interrupt_handler> interrupt_vector_table;
+  static inline std::span<interrupt_pointer> interrupt_vector_table;
 
   class irq_t
   {
@@ -136,7 +138,7 @@ public:
   {
     // Statically allocate a buffer of vectors to be used as the new IVT.
     static constexpr int total_vector_count = vector_count + core_interrupts;
-    static std::array<interrupt_handler, total_vector_count> vector_buffer{};
+    static std::array<interrupt_pointer, total_vector_count> vector_buffer{};
 
     // Will fill the interrupt handler and vector table with a function that
     // does nothing.
@@ -155,7 +157,7 @@ public:
     : m_irq(p_irq)
   {
     // TODO: MAJOR change this to only do this when the platform is unittest.
-    if constexpr (true) {
+    if constexpr (embed::is_platform("testing")) {
       setup_for_unittesting();
     }
   }
@@ -175,7 +177,7 @@ public:
   /// @brief Enable interrupt base
   ///
   /// @return true if this was successful
-  bool enable(interrupt_handler handler)
+  bool enable(interrupt_pointer handler)
   {
     const int last_irq = interrupt_vector_table.size() - core_interrupts;
 
@@ -214,7 +216,7 @@ public:
     return interrupt_vector_table;
   }
 
-  const bool verify_vector_enabled(interrupt_handler p_handler)
+  const bool verify_vector_enabled(interrupt_pointer p_handler)
   {
     if (m_irq.is_valid()) {
       bool check_vector, check_is_enabled;

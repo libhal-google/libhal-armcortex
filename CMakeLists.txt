@@ -5,6 +5,9 @@ project(libarmcortex VERSION 0.0.1 LANGUAGES CXX)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
+set(CMAKE_FIND_USE_PACKAGE_REGISTRY true)
+find_package(libembeddedhal)
+
 add_library(libarmcortex INTERFACE)
 
 target_include_directories(libarmcortex INTERFACE
@@ -29,4 +32,5 @@ add_executable(libarmcortex.test.exe
 target_link_libraries(libarmcortex.test.exe
                       PRIVATE
                       libarmcortex
+                      libembeddedhal::libembeddedhal
                       CONAN_PKG::boost-ext-ut)
