@@ -2,6 +2,8 @@
 
 #include <cinttypes>
 
+#include <libembeddedhal/context.hpp>
+
 namespace cortex_m {
 
 /// Structure type to access the Data Watchpoint and Trace Register (DWT).
@@ -96,6 +98,13 @@ public:
     // that they can be inspected during unit tests.
     dwt = &dummy_dwt;
     core = &dummy_core;
+  }
+
+  dwt_counter()
+  {
+    if constexpr (embed::is_a_test()) {
+      setup_for_unittesting();
+    }
   }
 
   /// Start the counter

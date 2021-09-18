@@ -7,8 +7,6 @@ using namespace cortex_m;
 
 suite system_timer_test = []() {
   system_timer test_subject;
-  test_subject.setup_for_unittesting();
-  interrupt::setup_for_unittesting();
   interrupt::initialize<20>();
 
   should("system_timer::attach_interrupt()") = [&] {
@@ -19,8 +17,7 @@ suite system_timer_test = []() {
     test_subject.attach_interrupt(dummy_handler);
 
     // Verify
-    expect(interrupt(test_subject.system_tick_irq)
-             .verify_vector_enabled(dummy_handler));
+    expect(interrupt(test_subject.irq).verify_vector_enabled(dummy_handler));
   };
 
   should("set system_timer::reload_value()") = [&] {

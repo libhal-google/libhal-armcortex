@@ -8,29 +8,34 @@ conan_basic_setup(TARGETS)
 set(CMAKE_FIND_USE_PACKAGE_REGISTRY true)
 find_package(libembeddedhal)
 
-add_library(libarmcortex INTERFACE)
+add_library(${PROJECT_NAME} INTERFACE)
 
-target_include_directories(libarmcortex INTERFACE
+target_include_directories(${PROJECT_NAME} INTERFACE
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                            $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>)
 
-target_compile_features(libarmcortex INTERFACE cxx_std_20)
-set_target_properties(libarmcortex PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
-export(TARGETS libarmcortex
-        NAMESPACE libarmcortex::
-        FILE "${CMAKE_CURRENT_BINARY_DIR}/libarmcortex-config.cmake")
-export(PACKAGE libarmcortex)
+export(TARGETS ${PROJECT_NAME}
+        NAMESPACE ${PROJECT_NAME}::
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake")
+export(PACKAGE ${PROJECT_NAME})
 
-add_executable(libarmcortex.test.exe
-               libarmcortex/system_timer.test.cpp
-               libarmcortex/dwt_counter.test.cpp
-               libarmcortex/interrupt.test.cpp
-               libarmcortex/main.test.cpp)
+set(TEST_EXECUTABLE_NAME "${PROJECT_NAME}.test.exe")
 
-target_link_libraries(libarmcortex.test.exe
+add_executable(${TEST_EXECUTABLE_NAME}
+${PROJECT_NAME}/system_timer.test.cpp
+${PROJECT_NAME}/dwt_counter.test.cpp
+${PROJECT_NAME}/interrupt.test.cpp
+${PROJECT_NAME}/main.test.cpp)
+
+target_compile_options(${TEST_EXECUTABLE_NAME} PRIVATE -g -O0)
+
+# target_compile_definitions(${TEST_EXECUTABLE_NAME} PUBLIC PLATFORM="test")
+target_link_libraries(${TEST_EXECUTABLE_NAME}
                       PRIVATE
-                      libarmcortex
+                      ${PROJECT_NAME}
                       libembeddedhal::libembeddedhal
                       CONAN_PKG::boost-ext-ut)

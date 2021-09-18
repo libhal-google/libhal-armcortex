@@ -7,7 +7,6 @@ using namespace cortex_m;
 
 suite dwt_test = []() {
   dwt_counter test_subject;
-  test_subject.setup_for_unittesting();
 
   "dwt_counter::start()"_test = [&]() {
     test_subject.start();

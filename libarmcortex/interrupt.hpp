@@ -136,6 +136,10 @@ public:
   template<size_t vector_count>
   static void initialize()
   {
+    if constexpr (embed::is_a_test()) {
+      setup_for_unittesting();
+    }
+
     // Statically allocate a buffer of vectors to be used as the new IVT.
     static constexpr int total_vector_count = vector_count + core_interrupts;
     static std::array<interrupt_pointer, total_vector_count> vector_buffer{};
@@ -156,8 +160,7 @@ public:
   interrupt(irq_t p_irq)
     : m_irq(p_irq)
   {
-    // TODO: MAJOR change this to only do this when the platform is unittest.
-    if constexpr (embed::is_platform("testing")) {
+    if constexpr (embed::is_a_test()) {
       setup_for_unittesting();
     }
   }

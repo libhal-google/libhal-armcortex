@@ -7,7 +7,6 @@ using namespace cortex_m;
 
 suite interrupt_test = [] {
   static constexpr size_t expected_interrupt_count = 42;
-  interrupt::setup_for_unittesting();
 
   expect(that % 16 == interrupt::core_interrupts);
 
