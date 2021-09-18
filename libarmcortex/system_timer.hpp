@@ -2,6 +2,8 @@
 
 #include <cinttypes>
 
+#include <libembeddedhal/context.hpp>
+
 #include "interrupt.hpp"
 
 namespace cortex_m {
@@ -32,12 +34,11 @@ public:
     count_flag = 16
   };
 
-  static constexpr intptr_t system_tick_address = 0xE000'E010UL;
-  static constexpr int system_tick_irq = -1;
+  static constexpr intptr_t address = 0xE000'E010UL;
+  static constexpr int irq = -1;
 
   /// Address of the ARM Cortex SysTick peripheral.
-  inline static auto* system_tick =
-    reinterpret_cast<system_tick_t*>(system_tick_address);
+  inline static auto* system_tick = reinterpret_cast<system_tick_t*>(address);
 
   static void setup_for_unittesting()
   {
@@ -49,9 +50,16 @@ public:
     system_tick = &dummy_system_tick;
   }
 
+  system_timer()
+  {
+    if constexpr (embed::is_a_test()) {
+      setup_for_unittesting();
+    }
+  }
+
   void attach_interrupt(interrupt_pointer system_tick_handler)
   {
-    cortex_m::interrupt(system_tick_irq).enable(system_tick_handler);
+    cortex_m::interrupt(irq).enable(system_tick_handler);
   }
 
   void reload_value(uint32_t reload_value) { system_tick->LOAD = reload_value; }
