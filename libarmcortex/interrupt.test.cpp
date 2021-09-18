@@ -14,7 +14,7 @@ suite interrupt_test = [] {
   should("interrupt::initialize()") = [&] {
     // Setup
     // Setup: Set the interrupt_vector_table span to nullptr AND size zero
-    interrupt::interrupt_vector_table = std::span<interrupt_handler>{};
+    interrupt::interrupt_vector_table = std::span<interrupt_pointer>{};
 
     expect(that % nullptr == interrupt::interrupt_vector_table.data());
     expect(that % 0 == interrupt::interrupt_vector_table.size());
@@ -34,7 +34,7 @@ suite interrupt_test = [] {
   };
 
   should("interrupt::enable()") = [&] {
-    interrupt_handler dummy_handler = []() {};
+    interrupt_pointer dummy_handler = []() {};
 
     should("interrupt::enable(5)") = [&]() {
       // Setup

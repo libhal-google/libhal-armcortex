@@ -49,7 +49,7 @@ public:
     system_tick = &dummy_system_tick;
   }
 
-  void attach_interrupt(interrupt_handler system_tick_handler)
+  void attach_interrupt(interrupt_pointer system_tick_handler)
   {
     cortex_m::interrupt(system_tick_irq).enable(system_tick_handler);
   }
