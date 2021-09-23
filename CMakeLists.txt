@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.1...3.21)
 project(libarmcortex VERSION 0.0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
-find_package(libembeddedhal REQUIRED)
+find_package(libembeddedhal CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
