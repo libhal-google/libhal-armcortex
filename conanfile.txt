@@ -1,6 +1,0 @@
-[requires]
-boost-ext-ut/1.1.8
-libembeddedhal/0.0.1@demo/testing
-
-[generators]
-cmake_find_package_multi

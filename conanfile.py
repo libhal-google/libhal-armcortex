@@ -3,7 +3,7 @@ from conan.tools.cmake import CMakeToolchain, CMake
 from conan.tools.layout import cmake_layout
 
 
-class LibARMCortexConan(ConanFile):
+class libarmcortex_conan(ConanFile):
     name = "libarmcortex"
     version = "0.0.1"
     license = "Apache License Version 2.0"
@@ -13,14 +13,8 @@ class LibARMCortexConan(ConanFile):
     topics = ("peripherals", "hardware")
     exports_sources = "CMakeLists.txt", "libarmcortex/*"
     no_copy_source = True
-    generators = "cmake_find_package"
-
-    def config_options(self):
-        pass
-
-    def generate(self):
-        tc = CMakeToolchain(self)
-        tc.generate()
+    settings = "os", "compiler", "build_type", "arch"
+    generators = "cmake_find_package_multi"
 
     def package(self):
         self.copy("*.hpp")
@@ -28,8 +22,8 @@ class LibARMCortexConan(ConanFile):
     def package_id(self):
         self.info.header_only()
 
+    def requirements(self):
+        self.requires("libembeddedhal/0.0.1@")
+
     def package_info(self):
         self.cpp_info.includedirs = ["."]
-
-    def requirements(self):
-        self.requires("libembeddedhal/0.0.1@demo/testing")
