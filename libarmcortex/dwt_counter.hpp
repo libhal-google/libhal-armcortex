@@ -113,10 +113,34 @@ public:
     core->demcr = (core->demcr | core_trace_enable);
     dwt->cyccnt = 0;
     dwt->ctrl = (dwt->ctrl | enable_dwt_cycle_count);
+
+    m_previous_count = 0;
+    m_overflow_count = 0;
   }
 
-  /// Return the current number of ticks. Note that this is typically 2x the
-  /// CPU frequency as it counts on rising and falling edges.
+  /// Return the current number of cycles of the CPU
   uint32_t count() { return dwt->cyccnt; }
+
+  /// Return the current number of ticks CPU and detects overflows which can be
+  /// used to get uptime durations up to 2^64.
+  uint64_t count64()
+  {
+    auto current_count = count();
+
+    if (m_previous_count > current_count) {
+      m_overflow_count++;
+    }
+
+    m_previous_count = current_count;
+
+    uint64_t combined_count = m_overflow_count;
+    combined_count <<= 32;
+    combined_count |= current_count;
+
+    return combined_count;
+  }
+
+  uint32_t m_previous_count = 0;
+  uint32_t m_overflow_count = 0;
 };
-} // namespace cortexm
+} // namespace cortex_m
