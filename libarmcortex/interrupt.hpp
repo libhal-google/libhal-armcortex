@@ -142,7 +142,8 @@ public:
 
     // Statically allocate a buffer of vectors to be used as the new IVT.
     static constexpr int total_vector_count = vector_count + core_interrupts;
-    static std::array<interrupt_pointer, total_vector_count> vector_buffer{};
+    alignas(512) static std::array<interrupt_pointer, total_vector_count>
+      vector_buffer{};
 
     // Will fill the interrupt handler and vector table with a function that
     // does nothing.
@@ -150,7 +151,8 @@ public:
 
     // Assign this inner vector to the global interrupt_vector_table span so
     // that it can be accessed in other functions.
-    interrupt_vector_table = vector_buffer;
+    interrupt_vector_table =
+      std::span{ vector_buffer.data(), vector_buffer.size() };
 
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
