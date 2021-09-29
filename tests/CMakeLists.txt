@@ -1,16 +1,22 @@
-set(TEST_EXECUTABLE_NAME "${PROJECT_NAME}.test.exe")
+cmake_minimum_required(VERSION 3.1...3.21)
 
-find_package(ut)
+project(test VERSION 0.0.1 LANGUAGES CXX)
 
-add_executable(${TEST_EXECUTABLE_NAME}
-${PROJECT_NAME}/system_timer.test.cpp
-${PROJECT_NAME}/dwt_counter.test.cpp
-${PROJECT_NAME}/interrupt.test.cpp
-tests/main.test.cpp)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
-target_compile_options(${TEST_EXECUTABLE_NAME} PRIVATE -g -O0)
-target_link_libraries(${TEST_EXECUTABLE_NAME}
-                      PRIVATE
-                      ${PROJECT_NAME}
-                      libembeddedhal::libembeddedhal
-                      ut)
+find_package(libarmcortex CONFIG REQUIRED)
+find_package(ut CONFIG REQUIRED)
+
+add_executable(${PROJECT_NAME}
+    system_timer.test.cpp
+    dwt_counter.test.cpp
+    interrupt.test.cpp
+    main.test.cpp)
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_definitions(${PROJECT_NAME} PRIVATE -DPLATFORM=test)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    libarmcortex::libarmcortex
+    boost::ut)

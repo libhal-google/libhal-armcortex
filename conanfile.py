@@ -9,7 +9,7 @@ class libarmcortex_conan(ConanFile):
     url = "https://github.com/SJSU-Dev2/libarmcortex"
     description = "A collection of interfaces and abstractions for embedded peripherals and devices using modern C++"
     topics = ("peripherals", "hardware")
-    exports_sources = "CMakeLists.txt", "libarmcortex/*"
+    exports_sources = "CMakeLists.txt", "include/*"
     no_copy_source = True
 
     def package(self):
@@ -20,6 +20,3 @@ class libarmcortex_conan(ConanFile):
 
     def requirements(self):
         self.requires("libembeddedhal/0.0.1@")
-
-    def package_info(self):
-        self.cpp_info.includedirs = ["."]

@@ -1,6 +1,5 @@
-#include "system_timer.hpp"
-
 #include <boost/ut.hpp>
+#include <libarmcortex/system_timer.hpp>
 
 using namespace boost::ut;
 using namespace cortex_m;

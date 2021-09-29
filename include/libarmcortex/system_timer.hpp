@@ -4,7 +4,7 @@
 
 #include <libembeddedhal/context.hpp>
 
-#include "interrupt.hpp"
+#include <libarmcortex/interrupt.hpp>
 
 namespace cortex_m {
 

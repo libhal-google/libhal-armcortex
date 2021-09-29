@@ -1,6 +1,5 @@
-#include "interrupt.hpp"
-
 #include <boost/ut.hpp>
+#include <libarmcortex/interrupt.hpp>
 
 using namespace boost::ut;
 using namespace cortex_m;

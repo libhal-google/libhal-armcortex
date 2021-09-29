@@ -1,6 +1,5 @@
-#include "dwt_counter.hpp"
-
 #include <boost/ut.hpp>
+#include <libarmcortex/dwt_counter.hpp>
 
 using namespace boost::ut;
 using namespace cortex_m;
