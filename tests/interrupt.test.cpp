@@ -1,10 +1,10 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/interrupt.hpp>
 
-using namespace boost::ut;
-using namespace cortex_m;
+boost::ut::suite interrupt_test = [] {
+  using namespace boost::ut;
+  using namespace cortex_m;
 
-suite interrupt_test = [] {
   static constexpr size_t expected_interrupt_count = 42;
 
   expect(that % 16 == interrupt::core_interrupts);
@@ -20,15 +20,15 @@ suite interrupt_test = [] {
     // Exercise
     interrupt::initialize<expected_interrupt_count>();
 
-    intptr_t pointer =
+    auto pointer =
       reinterpret_cast<intptr_t>(interrupt::interrupt_vector_table.data());
-    uint32_t pointer_value = static_cast<uint32_t>(pointer);
+    auto pointer_value = static_cast<uint32_t>(pointer);
 
     // Verify
     expect(that % nullptr != interrupt::interrupt_vector_table.data());
     expect(that % (expected_interrupt_count + interrupt::core_interrupts) ==
            interrupt::interrupt_vector_table.size());
-    expect(that % pointer_value == interrupt::scb->VTOR);
+    expect(that % pointer_value == interrupt::scb->vtor);
   };
 
   should("interrupt::enable()") = [&] {
@@ -49,7 +49,7 @@ suite interrupt_test = [] {
              interrupt::interrupt_vector_table[interrupt::core_interrupts +
                                                expected_irq]);
 
-      expect((1 << bit_position) & interrupt::nvic->ISER[index]);
+      expect((1U << bit_position) & interrupt::nvic->iser.at(index));
     };
 
     should("interrupt::enable(17)") = [&]() {
@@ -66,38 +66,34 @@ suite interrupt_test = [] {
       expect(dummy_handler ==
              interrupt::interrupt_vector_table[interrupt::core_interrupts +
                                                expected_irq]);
-      expect((1 << bit_position) & interrupt::nvic->ISER[index]);
+      expect((1U << bit_position) & interrupt::nvic->iser.at(index));
     };
 
     should("interrupt::enable(-5)") = [&]() {
       // Setup
       static constexpr int expected_irq = -5;
       const auto old_nvic = *interrupt::nvic;
-      const int iser_size = sizeof(old_nvic.ISER) / sizeof(old_nvic.ISER[0]);
 
       // Exercise
       bool success = interrupt(expected_irq).enable(dummy_handler);
 
       // Verify
       expect(that % success);
-      // Verify: That the dummy handler was added to the IVT (ISER )
+      // Verify: That the dummy handler was added to the IVT (ISER)
       expect(dummy_handler ==
              interrupt::interrupt_vector_table[interrupt::core_interrupts +
                                                expected_irq]);
       // Verify: ISER[] should not have changed when enable() succeeds but the
       // IRQ is less than 0.
-      for (int i = 0; i < iser_size; i++) {
-        expect(old_nvic.ISER[i] == interrupt::nvic->ISER[i]);
+      for (size_t i = 0; i < old_nvic.iser.size(); i++) {
+        expect(old_nvic.iser.at(i) == interrupt::nvic->iser.at(i));
       }
     };
 
     should("interrupt::enable(-20) fail") = [&]() {
       // Setup
       static constexpr int expected_irq = -20;
-      unsigned index = expected_irq >> 5;
-      unsigned bit_position = expected_irq & 0x1F;
       const auto old_nvic = *interrupt::nvic;
-      const int iser_size = sizeof(old_nvic.ISER) / sizeof(old_nvic.ISER[0]);
 
       // Setup: Re-initialize interrupts which will set each vector to "nop"
       interrupt::initialize<expected_interrupt_count>();
@@ -114,8 +110,8 @@ suite interrupt_test = [] {
       }
 
       // Verify: ISER[] should not have changed when enable() fails.
-      for (int i = 0; i < iser_size; i++) {
-        expect(old_nvic.ISER[i] == interrupt::nvic->ISER[i]);
+      for (size_t i = 0; i < old_nvic.iser.size(); i++) {
+        expect(old_nvic.iser.at(i) == interrupt::nvic->iser.at(i));
       }
     };
   };
@@ -124,8 +120,8 @@ suite interrupt_test = [] {
     should("interrupt(expected_irq).::disable(5)") = [&]() {
       // Setup
       static constexpr int expected_irq = 5;
-      unsigned index = expected_irq >> 5;
-      unsigned bit_position = expected_irq & 0x1F;
+      unsigned index = static_cast<uint32_t>(expected_irq) >> 5;
+      unsigned bit_position = static_cast<uint32_t>(expected_irq) & 0x1F;
 
       // Exercise
       bool success = interrupt(expected_irq).disable();
@@ -136,14 +132,14 @@ suite interrupt_test = [] {
              interrupt::interrupt_vector_table[interrupt::core_interrupts +
                                                expected_irq]);
 
-      expect((1 << bit_position) & interrupt::nvic->ICER[index]);
+      expect((1U << bit_position) & interrupt::nvic->icer.at(index));
     };
 
     should("interrupt(expected_irq).::disable(17)") = [&]() {
       // Setup
       static constexpr int expected_irq = 17;
-      unsigned index = expected_irq >> 5;
-      unsigned bit_position = expected_irq & 0x1F;
+      unsigned index = static_cast<uint32_t>(expected_irq) >> 5;
+      unsigned bit_position = static_cast<uint32_t>(expected_irq) & 0x1F;
 
       // Exercise
       bool success = interrupt(expected_irq).disable();
@@ -153,38 +149,34 @@ suite interrupt_test = [] {
       expect(interrupt::nop ==
              interrupt::interrupt_vector_table[interrupt::core_interrupts +
                                                expected_irq]);
-      expect((1 << bit_position) & interrupt::nvic->ICER[index]);
+      expect((1U << bit_position) & interrupt::nvic->icer.at(index));
     };
 
     should("interrupt(expected_irq).disable(-5)") = [&]() {
       // Setup
       static constexpr int expected_irq = -5;
       const auto old_nvic = *interrupt::nvic;
-      const int ICER_size = sizeof(old_nvic.ICER) / sizeof(old_nvic.ICER[0]);
 
       // Exercise
       bool success = interrupt(expected_irq).disable();
 
       // Verify
       expect(that % success);
-      // Verify: That the dummy handler was added to the IVT (ICER )
+      // Verify: That the dummy handler was added to the IVT (icer )
       expect(interrupt::nop ==
              interrupt::interrupt_vector_table[interrupt::core_interrupts +
                                                expected_irq]);
-      // Verify: ICER[] should not have changed when disable() succeeds but the
+      // Verify: icer[] should not have changed when disable() succeeds but the
       // IRQ is less than 0.
-      for (int i = 0; i < ICER_size; i++) {
-        expect(old_nvic.ICER[i] == interrupt::nvic->ICER[i]);
+      for (size_t i = 0; i < old_nvic.icer.size(); i++) {
+        expect(old_nvic.icer.at(i) == interrupt::nvic->icer.at(i));
       }
     };
 
     should("interrupt(expected_irq).disable(-20) fail") = [&]() {
       // Setup
       static constexpr int expected_irq = -20;
-      unsigned index = expected_irq >> 5;
-      unsigned bit_position = expected_irq & 0x1F;
       const auto old_nvic = *interrupt::nvic;
-      const int ICER_size = sizeof(old_nvic.ICER) / sizeof(old_nvic.ICER[0]);
 
       // Setup: Re-initialize interrupts which will set each vector to "nop"
       interrupt::initialize<expected_interrupt_count>();
@@ -200,9 +192,9 @@ suite interrupt_test = [] {
         expect(interrupt::nop == interrupt_function);
       }
 
-      // Verify: ICER[] should not have changed when disable() fails.
-      for (int i = 0; i < ICER_size; i++) {
-        expect(old_nvic.ICER[i] == interrupt::nvic->ICER[i]);
+      // Verify: icer[] should not have changed when disable() fails.
+      for (size_t i = 0; i < old_nvic.icer.size(); i++) {
+        expect(old_nvic.icer.at(i) == interrupt::nvic->icer.at(i));
       }
     };
   };

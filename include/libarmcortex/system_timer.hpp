@@ -12,13 +12,13 @@ namespace cortex_m {
 struct system_tick_t
 {
   /// Offset: 0x000 (R/W)  SysTick Control and Status Register
-  volatile uint32_t CTRL;
+  volatile uint32_t ctrl;
   /// Offset: 0x004 (R/W)  SysTick Reload Value Register
-  volatile uint32_t LOAD;
+  volatile uint32_t load;
   /// Offset: 0x008 (R/W)  SysTick Current Value Register
-  volatile uint32_t VAL;
+  volatile uint32_t val;
   /// Offset: 0x00C (R/ )  SysTick Calibration Register
-  const volatile uint32_t CALIB;
+  const volatile uint32_t calib;
 };
 
 class system_timer
@@ -62,21 +62,21 @@ public:
     cortex_m::interrupt(irq).enable(system_tick_handler);
   }
 
-  void reload_value(uint32_t reload_value) { system_tick->LOAD = reload_value; }
-  uint32_t reload_value() { return system_tick->LOAD; }
+  void reload_value(uint32_t reload_value) { system_tick->load = reload_value; }
+  uint32_t reload_value() { return system_tick->load; }
 
   void start()
   {
     // Set all flags required to enable the counter
-    uint32_t ctrl_mask = (1 << control_bitmap::clk_source) |
-                         (1 << control_bitmap::tick_interrupt) |
-                         (1 << control_bitmap::enable_counter);
+    uint32_t ctrl_mask = (1U << control_bitmap::clk_source) |
+                         (1U << control_bitmap::tick_interrupt) |
+                         (1U << control_bitmap::enable_counter);
 
     // Set the system tick counter to start immediately
-    system_tick->VAL = 0;
-    system_tick->CTRL = ctrl_mask;
+    system_tick->val = 0;
+    system_tick->ctrl = ctrl_mask;
   }
 
-  void disable() { system_tick->CTRL = 0; }
+  void disable() { system_tick->ctrl = 0; }
 };
-}
+} // namespace cortex_m

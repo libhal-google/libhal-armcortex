@@ -36,7 +36,7 @@
 archives/
 
 # GDB
-*/**/.gdb_history
+.gdb_history
 
 # Artifacts
 build/

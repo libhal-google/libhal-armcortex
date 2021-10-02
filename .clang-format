@@ -3,3 +3,4 @@ Language: Cpp
 UseTab: Never
 AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None
+FixNamespaceComments: True

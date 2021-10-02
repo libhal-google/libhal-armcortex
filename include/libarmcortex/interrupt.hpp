@@ -6,81 +6,82 @@
 #include <array>
 #include <cstdint>
 #include <span>
+#include <utility>
 
 namespace cortex_m {
 /// Structure type to access the System Control Block (SCB).
 struct scb_registers_t
 {
   /// Offset: 0x000 (R/ )  CPUID Base Register
-  const volatile uint32_t CPUID;
+  const volatile uint32_t cpuid;
   /// Offset: 0x004 (R/W)  Interrupt Control and State Register
-  volatile uint32_t ICSR;
+  volatile uint32_t icsr;
   /// Offset: 0x008 (R/W)  Vector Table Offset Register
-  volatile uint32_t VTOR;
+  volatile uint32_t vtor;
   /// Offset: 0x00C (R/W)  Application Interrupt and Reset Control Register
-  volatile uint32_t AIRCR;
+  volatile uint32_t aircr;
   /// Offset: 0x010 (R/W)  System Control Register
-  volatile uint32_t SCR;
+  volatile uint32_t scr;
   /// Offset: 0x014 (R/W)  Configuration Control Register
-  volatile uint32_t CCR;
+  volatile uint32_t ccr;
   /// Offset: 0x018 (R/W)  System Handlers Priority Registers (4-7, 8-11, 5)
-  volatile uint8_t SHP[12U];
+  std::array<volatile uint8_t, 12U> shp;
   /// Offset: 0x024 (R/W)  System Handler Control and State Register
-  volatile uint32_t SHCSR;
+  volatile uint32_t shcsr;
   /// Offset: 0x028 (R/W)  Configurable Fault Status Register
-  volatile uint32_t CFSR;
+  volatile uint32_t cfsr;
   /// Offset: 0x02C (R/W)  HardFault Status Register
-  volatile uint32_t HFSR;
+  volatile uint32_t hfsr;
   /// Offset: 0x030 (R/W)  Debug Fault Status Register
-  volatile uint32_t DFSR;
+  volatile uint32_t dfsr;
   /// Offset: 0x034 (R/W)  MemManage Fault Address Register
-  volatile uint32_t MMFAR;
+  volatile uint32_t mmfar;
   /// Offset: 0x038 (R/W)  BusFault Address Register
-  volatile uint32_t BFAR;
+  volatile uint32_t bfar;
   /// Offset: 0x03C (R/W)  Auxiliary Fault Status Register
-  volatile uint32_t AFSR;
+  volatile uint32_t afsr;
   /// Offset: 0x040 (R/ )  Processor Feature Register
-  const volatile uint32_t PFR[2U];
+  const std::array<volatile uint32_t, 2U> pfr;
   /// Offset: 0x048 (R/ )  Debug Feature Register
-  const volatile uint32_t DFR;
+  const volatile uint32_t dfr;
   /// Offset: 0x04C (R/ )  Auxiliary Feature Register
-  const volatile uint32_t ADR;
+  const volatile uint32_t adr;
   /// Offset: 0x050 (R/ )  Memory Model Feature Register
-  const volatile uint32_t MMFR[4U];
+  const std::array<volatile uint32_t, 4U> mmfr;
   /// Offset: 0x060 (R/ )  Instruction Set Attributes Register
-  const volatile uint32_t ISAR[5U];
-  uint32_t RESERVED0[5U];
+  const std::array<volatile uint32_t, 5U> isar;
+  std::array<uint32_t, 5U> reserved0;
   /// Offset: 0x088 (R/W)  Coprocessor Access Control Register
-  volatile uint32_t CPACR;
+  volatile uint32_t cpacr;
 };
 
 /// Structure type to access the Nested Vectored Interrupt Controller (NVIC)
 struct nvic_register_t
 {
   /// Offset: 0x000 (R/W)  Interrupt Set Enable Register
-  volatile uint32_t ISER[8U];
-  uint32_t RESERVED0[24U];
+  std::array<volatile uint32_t, 8U> iser;
+  std::array<uint32_t, 24U> reserved0;
   /// Offset: 0x080 (R/W)  Interrupt Clear Enable Register
-  volatile uint32_t ICER[8U];
-  uint32_t RSERVED1[24U];
+  std::array<volatile uint32_t, 8U> icer;
+  std::array<uint32_t, 24U> rserved1;
   /// Offset: 0x100 (R/W)  Interrupt Set Pending Register
-  volatile uint32_t ISPR[8U];
-  uint32_t RESERVED2[24U];
+  std::array<volatile uint32_t, 8U> ispr;
+  std::array<uint32_t, 24U> reserved2;
   /// Offset: 0x180 (R/W)  Interrupt Clear Pending Register
-  volatile uint32_t ICPR[8U];
-  uint32_t RESERVED3[24U];
+  std::array<volatile uint32_t, 8U> icpr;
+  std::array<uint32_t, 24U> reserved3;
   /// Offset: 0x200 (R/W)  Interrupt Active bit Register
-  volatile uint32_t IABR[8U];
-  uint32_t RESERVED4[56U];
+  std::array<volatile uint32_t, 8U> iabr;
+  std::array<uint32_t, 56U> reserved4;
   /// Offset: 0x300 (R/W)  Interrupt Priority Register (8Bit wide)
-  volatile uint8_t IP[240U];
-  uint32_t RESERVED5[644U];
+  std::array<volatile uint8_t, 240U> ip;
+  std::array<uint32_t, 644U> reserved5;
   /// Offset: 0xE00 ( /W)  Software Trigger Interrupt Register
-  volatile uint32_t STIR;
+  volatile uint32_t stir;
 };
 
 /// Used specifically for defining an interrupt vector table of addresses.
-using interrupt_pointer = void (*)(void);
+using interrupt_pointer = void (*)();
 
 class interrupt
 {
@@ -106,7 +107,7 @@ public:
   class irq_t
   {
   public:
-    constexpr irq_t(int p_irq)
+    constexpr irq_t(int p_irq) // NOLINT
       : m_irq(p_irq)
     {}
 
@@ -116,14 +117,37 @@ public:
       return *this;
     }
 
-    constexpr unsigned int register_index() { return m_irq >> 5; }
-    constexpr unsigned int enable_mask() { return 1 << (m_irq & 0x1F); }
-    constexpr unsigned int vector_index() { return m_irq + core_interrupts; }
-    constexpr bool default_enabled() { return m_irq < 0; }
-    constexpr bool is_valid()
+    /**
+     * @brief Bits 5 and above represent which 32-bit word in the iser and icer
+     * arrays IRQs enable bit resides.
+     *
+     */
+    static constexpr uint32_t index_position = 5;
+    /**
+     * @brief Lower 5 bits indicate which bit within the 32-bit word is the
+     * enable bit.
+     *
+     */
+    static constexpr uint32_t enable_mask_code = 0x1F;
+
+    [[nodiscard]] constexpr bool default_enabled() const { return m_irq < 0; }
+    [[nodiscard]] constexpr uint32_t register_index() const
     {
-      const int last_irq = interrupt_vector_table.size() - core_interrupts;
-      return -core_interrupts < m_irq && m_irq < last_irq;
+      return static_cast<uint32_t>(m_irq) >> index_position;
+    }
+    [[nodiscard]] constexpr uint32_t enable_mask() const
+    {
+      return 1U << (static_cast<uint32_t>(m_irq) & enable_mask_code);
+    }
+    [[nodiscard]] constexpr size_t vector_index() const
+    {
+      return m_irq + core_interrupts;
+    }
+    [[nodiscard]] constexpr bool is_valid() const
+    {
+      const size_t last_irq = (interrupt_vector_table.size() - core_interrupts);
+      return std::cmp_greater(m_irq, -core_interrupts) &&
+             std::cmp_less(m_irq, last_irq);
     }
 
   private:
@@ -133,7 +157,7 @@ public:
   /// Basic interrupt that performs no work
   static void nop() {}
 
-  template<size_t vector_count>
+  template<size_t VectorCount>
   static void initialize()
   {
     if constexpr (embed::is_a_test()) {
@@ -141,7 +165,7 @@ public:
     }
 
     // Statically allocate a buffer of vectors to be used as the new IVT.
-    static constexpr int total_vector_count = vector_count + core_interrupts;
+    static constexpr size_t total_vector_count = VectorCount + core_interrupts;
     alignas(512) static std::array<interrupt_pointer, total_vector_count>
       vector_buffer{};
 
@@ -156,10 +180,10 @@ public:
 
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
-    scb->VTOR = reinterpret_cast<intptr_t>(vector_buffer.data());
+    scb->vtor = reinterpret_cast<intptr_t>(vector_buffer.data());
   }
 
-  interrupt(irq_t p_irq)
+  explicit interrupt(irq_t p_irq)
     : m_irq(p_irq)
   {
     if constexpr (embed::is_a_test()) {
@@ -184,8 +208,6 @@ public:
   /// @return true if this was successful
   bool enable(interrupt_pointer handler)
   {
-    const int last_irq = interrupt_vector_table.size() - core_interrupts;
-
     // IRQ must be between -16 < irq < last_irq
     if (!m_irq.is_valid()) {
       return false;
@@ -201,8 +223,6 @@ public:
 
   bool disable()
   {
-    const int last_irq = interrupt_vector_table.size() - core_interrupts;
-
     // IRQ must be between -16 < irq < last_irq
     if (!m_irq.is_valid()) {
       return false;
@@ -221,32 +241,37 @@ public:
     return interrupt_vector_table;
   }
 
-  const bool verify_vector_enabled(interrupt_pointer p_handler)
+  bool verify_vector_enabled(interrupt_pointer p_handler)
   {
-    if (m_irq.is_valid()) {
-      bool check_vector, check_is_enabled;
-      check_vector = interrupt_vector_table[m_irq.vector_index()] == p_handler;
-
-      if (m_irq.default_enabled()) {
-        check_is_enabled = true;
-      } else {
-        check_is_enabled =
-          (nvic->ISER[m_irq.register_index()] & m_irq.enable_mask());
-      }
-
-      return check_vector && check_is_enabled;
+    // Return early if the irq isn't even valid
+    if (!m_irq.is_valid()) {
+      return false;
     }
-    return true;
+
+    // Check if the handler match
+    auto irq_handler = interrupt_vector_table[m_irq.vector_index()];
+    bool handlers_are_the_same = (irq_handler == p_handler);
+
+    if (!handlers_are_the_same) {
+      return false;
+    }
+
+    if (m_irq.default_enabled()) {
+      return true;
+    }
+
+    uint32_t enable_register = nvic->iser.at(m_irq.register_index());
+    return (enable_register & m_irq.enable_mask()) == 0U;
   }
 
-protected:
+private:
   /// Enable External Interrupt
   /// Enables a device-specific interrupt in the NVIC interrupt controller.
   ///
   /// @param irq - External interrupt number. Value cannot be negative.
   void nvic_enable_irq()
   {
-    auto* interrupt_enable = &nvic->ISER[m_irq.register_index()];
+    auto* interrupt_enable = &nvic->iser.at(m_irq.register_index());
     *interrupt_enable = *interrupt_enable | m_irq.enable_mask();
   }
 
@@ -256,7 +281,7 @@ protected:
   /// @param irq - External interrupt number. Value cannot be negative.
   void nvic_disable_irq()
   {
-    auto* interrupt_clear = &nvic->ICER[m_irq.register_index()];
+    auto* interrupt_clear = &nvic->icer.at(m_irq.register_index());
     *interrupt_clear = *interrupt_clear | m_irq.enable_mask();
   }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cinttypes>
 
 #include <libembeddedhal/context.hpp>
@@ -31,21 +32,21 @@ struct dwt_registers_t
   volatile uint32_t mask0;
   /// Offset: 0x028 (R/W)  Function Register 0
   volatile uint32_t function0;
-  uint32_t reserved0[1U];
+  std::array<uint32_t, 1> reserved0;
   /// Offset: 0x030 (R/W)  Comparator Register 1
   volatile uint32_t comp1;
   /// Offset: 0x034 (R/W)  Mask Register 1
   volatile uint32_t mask1;
   /// Offset: 0x038 (R/W)  Function Register 1
   volatile uint32_t function1;
-  uint32_t reserved1[1U];
+  std::array<uint32_t, 1> reserved1;
   /// Offset: 0x040 (R/W)  Comparator Register 2
   volatile uint32_t comp2;
   /// Offset: 0x044 (R/W)  Mask Register 2
   volatile uint32_t mask2;
   /// Offset: 0x048 (R/W)  Function Register 2
   volatile uint32_t function2;
-  uint32_t reserved2[1U];
+  std::array<uint32_t, 1> reserved2;
   /// Offset: 0x050 (R/W)  Comparator Register 3
   volatile uint32_t comp3;
   /// Offset: 0x054 (R/W)  Mask Register 3
@@ -119,7 +120,11 @@ public:
   }
 
   /// Return the current number of cycles of the CPU
-  uint32_t count() { return dwt->cyccnt; }
+  uint32_t count()
+  {
+    m_previous_count = dwt->cyccnt;
+    return m_previous_count;
+  }
 
   /// Return the current number of ticks CPU and detects overflows which can be
   /// used to get uptime durations up to 2^64.
