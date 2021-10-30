@@ -6,7 +6,7 @@
 
 #include <libarmcortex/interrupt.hpp>
 
-namespace cortex_m {
+namespace embed::cortex_m {
 
 /// @brief  Structure type to access the System Timer (SysTick).
 struct system_tick_t
@@ -79,4 +79,4 @@ public:
 
   void disable() { system_tick->ctrl = 0; }
 };
-} // namespace cortex_m
+} // namespace embed::cortex_m

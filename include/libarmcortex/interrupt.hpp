@@ -8,7 +8,7 @@
 #include <span>
 #include <utility>
 
-namespace cortex_m {
+namespace embed::cortex_m {
 /// Structure type to access the System Control Block (SCB).
 struct scb_registers_t
 {
@@ -166,7 +166,7 @@ public:
 
     // Statically allocate a buffer of vectors to be used as the new IVT.
     static constexpr size_t total_vector_count = VectorCount + core_interrupts;
-    alignas(512) static std::array<interrupt_pointer, total_vector_count>
+    alignas(64) static std::array<interrupt_pointer, total_vector_count>
       vector_buffer{};
 
     // Will fill the interrupt handler and vector table with a function that
@@ -175,8 +175,7 @@ public:
 
     // Assign this inner vector to the global interrupt_vector_table span so
     // that it can be accessed in other functions.
-    interrupt_vector_table =
-      std::span{ vector_buffer.data(), vector_buffer.size() };
+    interrupt_vector_table = vector_buffer;
 
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
@@ -287,4 +286,4 @@ private:
 
   irq_t m_irq;
 };
-} // namespace cortex_m
+} // namespace embed::cortex_m
