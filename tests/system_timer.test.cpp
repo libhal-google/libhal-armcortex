@@ -1,9 +1,9 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/system_timer.hpp>
 
+namespace embed::cortex_m {
 boost::ut::suite system_timer_test = []() {
   using namespace boost::ut;
-  using namespace cortex_m;
 
   system_timer test_subject;
   static constexpr size_t ivt_count = 20;
@@ -80,3 +80,4 @@ boost::ut::suite system_timer_test = []() {
     expect(that % 0 == cortex_m::system_timer::system_tick->ctrl);
   };
 };
+}

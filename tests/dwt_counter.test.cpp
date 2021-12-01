@@ -1,9 +1,10 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/dwt_counter.hpp>
 
+namespace embed::cortex_m {
 boost::ut::suite dwt_test = []() {
   using namespace boost::ut;
-  using namespace cortex_m;
+  using namespace embed::cortex_m;
 
   dwt_counter test_subject;
 
@@ -26,3 +27,4 @@ boost::ut::suite dwt_test = []() {
     expect(that % 1024 == test_subject.count());
   };
 };
+}

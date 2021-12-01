@@ -1,9 +1,9 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/interrupt.hpp>
 
+namespace embed::cortex_m {
 boost::ut::suite interrupt_test = [] {
   using namespace boost::ut;
-  using namespace cortex_m;
 
   static constexpr size_t expected_interrupt_count = 42;
 
@@ -211,3 +211,4 @@ boost::ut::suite interrupt_test = [] {
            interrupt::get_interrupt_vector_table().size());
   };
 };
+}

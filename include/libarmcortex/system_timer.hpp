@@ -2,9 +2,9 @@
 
 #include <cinttypes>
 
-#include <libembeddedhal/context.hpp>
+#include "interrupt.hpp"
 
-#include <libarmcortex/interrupt.hpp>
+#include <libembeddedhal/context.hpp>
 
 namespace embed::cortex_m {
 

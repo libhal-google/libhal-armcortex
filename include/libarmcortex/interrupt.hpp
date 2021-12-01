@@ -1,12 +1,12 @@
 #pragma once
 
-#include <libembeddedhal/context.hpp>
-
 #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <span>
 #include <utility>
+
+#include <libembeddedhal/context.hpp>
 
 namespace embed::cortex_m {
 /// Structure type to access the System Control Block (SCB).
