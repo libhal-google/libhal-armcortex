@@ -57,12 +57,16 @@ public:
     }
   }
 
-  void attach_interrupt(interrupt_pointer system_tick_handler)
+  void attach_interrupt(interrupt_pointer p_system_tick_handler)
   {
-    cortex_m::interrupt(irq).enable(system_tick_handler);
+    cortex_m::interrupt(irq).enable(p_system_tick_handler);
   }
 
-  void reload_value(uint32_t reload_value) { system_tick->load = reload_value; }
+  void reload_value(uint32_t p_reload_value)
+  {
+    system_tick->load = p_reload_value;
+  }
+
   uint32_t reload_value() { return system_tick->load; }
 
   void start()
@@ -79,4 +83,4 @@ public:
 
   void disable() { system_tick->ctrl = 0; }
 };
-} // namespace embed::cortex_m
+}  // namespace embed::cortex_m

@@ -63,7 +63,7 @@ struct nvic_register_t
   std::array<uint32_t, 24U> reserved0;
   /// Offset: 0x080 (R/W)  Interrupt Clear Enable Register
   std::array<volatile uint32_t, 8U> icer;
-  std::array<uint32_t, 24U> rserved1;
+  std::array<uint32_t, 24U> reserved1;
   /// Offset: 0x100 (R/W)  Interrupt Set Pending Register
   std::array<volatile uint32_t, 8U> ispr;
   std::array<uint32_t, 24U> reserved2;
@@ -107,7 +107,7 @@ public:
   class irq_t
   {
   public:
-    constexpr irq_t(int p_irq) // NOLINT
+    constexpr irq_t(int p_irq)
       : m_irq(p_irq)
     {}
 
@@ -205,14 +205,14 @@ public:
   /// @brief Enable interrupt base
   ///
   /// @return true if this was successful
-  bool enable(interrupt_pointer handler)
+  bool enable(interrupt_pointer p_handler)
   {
     // IRQ must be between -16 < irq < last_irq
     if (!m_irq.is_valid()) {
       return false;
     }
 
-    interrupt_vector_table[m_irq.vector_index()] = handler;
+    interrupt_vector_table[m_irq.vector_index()] = p_handler;
 
     if (!m_irq.default_enabled()) {
       nvic_enable_irq();
@@ -286,4 +286,4 @@ private:
 
   irq_t m_irq;
 };
-} // namespace embed::cortex_m
+}  // namespace embed::cortex_m

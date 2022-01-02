@@ -50,4 +50,4 @@ void initialize_data_section()
   intptr_t data_size = reinterpret_cast<intptr_t>(&__data_size);
   memcpy(&__data_start, &__data_source, data_size);
 }
-} // namespace embed::cortex
+}  // namespace embed::cortex_m

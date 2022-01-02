@@ -77,7 +77,7 @@ public:
   };
 
   static constexpr unsigned core_trace_enable = 1 << 24U;
-  static constexpr unsigned enable_dwt_cycle_count = 1 << 0;
+  static constexpr unsigned enable_cycle_count = 1 << 0;
 
   /// Address of the hardware DWT registers
   static constexpr intptr_t dwt_address = 0xE0001000UL;
@@ -116,7 +116,7 @@ public:
   {
     core->demcr = (core->demcr | core_trace_enable);
     dwt->cyccnt = 0;
-    dwt->ctrl = (dwt->ctrl | enable_dwt_cycle_count);
+    dwt->ctrl = (dwt->ctrl | enable_cycle_count);
 
     m_previous_count = 0;
     m_overflow_count = 0;
@@ -151,4 +151,4 @@ public:
   uint32_t m_previous_count = 0;
   uint32_t m_overflow_count = 0;
 };
-} // namespace embed::cortex_m
+}  // namespace embed::cortex_m
