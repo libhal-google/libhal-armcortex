@@ -4,7 +4,7 @@
 
 #include "interrupt.hpp"
 
-#include <libembeddedhal/context.hpp>
+#include <libembeddedhal/config.hpp>
 
 namespace embed::cortex_m {
 
@@ -52,7 +52,7 @@ public:
 
   system_timer()
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (embed::config::is_a_test()) {
       setup_for_unittesting();
     }
   }

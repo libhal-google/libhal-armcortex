@@ -3,7 +3,7 @@
 #include <array>
 #include <cinttypes>
 
-#include <libembeddedhal/context.hpp>
+#include <libembeddedhal/config.hpp>
 
 namespace embed::cortex_m {
 /**
@@ -106,7 +106,7 @@ public:
 
   dwt_counter()
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (embed::config::is_a_test()) {
       setup_for_unittesting();
     }
   }

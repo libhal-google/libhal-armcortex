@@ -6,7 +6,7 @@
 #include <span>
 #include <utility>
 
-#include <libembeddedhal/context.hpp>
+#include <libembeddedhal/config.hpp>
 
 namespace embed::cortex_m {
 /// Structure type to access the System Control Block (SCB).
@@ -185,7 +185,7 @@ public:
   explicit interrupt(irq_t p_irq)
     : m_irq(p_irq)
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (embed::config::is_a_test()) {
       setup_for_unittesting();
     }
   }
