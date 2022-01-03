@@ -43,6 +43,7 @@
         "iser",
         "NVIC",
         "icer",
-        "calib"
+        "calib",
+        "TPIU"
     ]
 }
