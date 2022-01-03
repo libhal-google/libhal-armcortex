@@ -36,7 +36,16 @@
 archives/
 
 # GDB
-.gdb_history
+*/**/.gdb_history
 
 # Artifacts
 build/
+docs/doxygen/
+docs/doxygen_warn.log
+docs/content/api/
+!docs/content/api/_index.md
+docs/public/
+tools/
+
+# lint artifacts
+ncc.stderr
