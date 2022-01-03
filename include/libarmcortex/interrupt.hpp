@@ -160,7 +160,7 @@ public:
   template<size_t VectorCount>
   static void initialize()
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (embed::config::is_a_test()) {
       setup_for_unittesting();
     }
 
