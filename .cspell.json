@@ -8,8 +8,6 @@
         "dcrsr",
         "dcrdr",
         "demcr",
-        "demcr",
-        "demcr",
         "CPUID",
         "cpuid",
         "icsr",
@@ -31,19 +29,9 @@
         "ispr",
         "icpr",
         "iabr",
-        "NVIC",
-        "nvic",
-        "nvic",
-        "nvic",
-        "iser",
-        "icer",
-        "vtor",
-        "iser",
-        "NVIC",
-        "iser",
-        "NVIC",
-        "icer",
         "calib",
-        "TPIU"
+        "TPIU",
+        "xstd",
+        "bitmanip"
     ]
 }

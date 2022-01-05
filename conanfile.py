@@ -20,3 +20,4 @@ class libarmcortex_conan(ConanFile):
 
     def requirements(self):
         self.requires("libembeddedhal/0.0.1@")
+        self.requires("libxbitset/0.0.1@")
