@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cinttypes>
+#include <functional>
 
 #include "interrupt.hpp"
 
 #include <libembeddedhal/config.hpp>
+#include <libembeddedhal/frequency.hpp>
 #include <libembeddedhal/static_callable.hpp>
 #include <libembeddedhal/timer/timer.hpp>
 #include <libxbitset/bitset.hpp>
@@ -17,7 +19,7 @@ namespace embed::cortex_m {
  * simple timer for every platform using these processor.
  *
  */
-class system_timer : public embed::timer
+class systick_timer : public embed::timer
 {
 public:
   /// @brief  Structure type to access the System Timer (SysTick).
@@ -94,16 +96,15 @@ public:
   }
 
   /**
-   * @brief Construct a new system timer object
+   * @brief Construct a new systick_timer timer object
    *
    * @param p_input_frequency - SysTick timer input clock frequency
    * @param p_source - which clock source will feed the SysTick timer
    */
-  system_timer(uint32_t p_input_frequency,
-               clock_source p_source = clock_source::processor)
+  systick_timer(frequency p_input_frequency,
+                clock_source p_source = clock_source::processor)
     : m_input_frequency(p_input_frequency)
     , m_source(p_source)
-
   {
     if constexpr (embed::config::is_a_test()) {
       setup_for_unittesting();
@@ -117,7 +118,7 @@ public:
    *
    * @param p_input_frequency - new input clock period
    */
-  void input_frequency(uint32_t p_input_frequency)
+  void input_frequency(frequency p_input_frequency)
   {
     m_input_frequency = p_input_frequency;
   }
@@ -127,7 +128,7 @@ public:
    *
    * @return uint32_t - get the currently assigned clock period
    */
-  uint32_t input_frequency() { return m_input_frequency; }
+  frequency input_frequency() { return m_input_frequency; }
 
   /**
    * @brief initialize the driver
@@ -195,8 +196,24 @@ public:
   boost::leaf::result<void> schedule(std::function<void(void)> p_callback,
                                      std::chrono::nanoseconds p_delay) override
   {
-    static constexpr std::chrono::nanoseconds minimum(0x00000001);
-    static constexpr std::chrono::nanoseconds maximum(0x00FFFFFF);
+    static constexpr frequency::int_t minimum = 0x00000001;
+    static constexpr frequency::int_t maximum = 0x00FFFFFF;
+
+    auto cycle_count = m_input_frequency.cycles_per(p_delay);
+
+    if (cycle_count <= minimum) {
+      auto min_duration = m_input_frequency.duration_from_cycles(minimum);
+      return boost::leaf::new_error(delay_too_small{
+        .invalid = p_delay,
+        .minimum = min_duration,
+      });
+    } else if (cycle_count >= maximum) {
+      auto max_duration = m_input_frequency.duration_from_cycles(maximum);
+      return boost::leaf::new_error(delay_too_large{
+        .invalid = p_delay,
+        .maximum = max_duration,
+      });
+    }
 
     // Stop the previously scheduled event
     stop();
@@ -204,26 +221,13 @@ public:
     // Save the p_callback to the static_callable object's statically allocated
     // callback function. The lifetime of this object exists for the duration of
     // the program, so there will never be a dangling reference.
-    auto handler = static_callable<system_timer, 0, void(void)>(p_callback);
+    auto handler = static_callable<systick_timer, 0, void(void)>(p_callback);
 
     // Enable interrupt service routine for SysTick using the callback
     cortex_m::interrupt(irq).enable(handler.get_handler());
 
-    // Setup reload interval
-    if (p_delay < minimum) {
-      return boost::leaf::new_error(delay_too_small{
-        .invalid = p_delay,
-        .minimum = minimum,
-      });
-    } else if (p_delay > maximum) {
-      return boost::leaf::new_error(delay_too_large{
-        .invalid = p_delay,
-        .maximum = maximum,
-      });
-    }
-
     // Set the time reload value
-    sys_tick->reload = p_delay.count();
+    sys_tick->reload = static_cast<uint32_t>(cycle_count);
 
     // Starting the timer will restart the count
     start();
@@ -235,9 +239,8 @@ public:
    * @brief Destroy the system timer object
    *
    * Stop the timer and disable the interrupt service routine.
-   *
    */
-  ~system_timer()
+  ~systick_timer()
   {
     stop();
     cortex_m::interrupt(irq).disable();
@@ -254,7 +257,7 @@ private:
     xstd::bitmanip(sys_tick->control).reset(control_register::enable_counter);
   }
 
-  uint32_t m_input_frequency;
+  frequency m_input_frequency;
   clock_source m_source;
 };
 }  // namespace embed::cortex_m
