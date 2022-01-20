@@ -8,6 +8,8 @@
 
 #include <libembeddedhal/config.hpp>
 
+#include "system_control.hpp"
+
 namespace embed::cortex_m {
 /// Used specifically for defining an interrupt vector table of addresses.
 using interrupt_pointer = void (*)();
@@ -19,53 +21,6 @@ using interrupt_pointer = void (*)();
 class interrupt
 {
 public:
-  /// Structure type to access the System Control Block (SCB).
-  struct scb_registers_t
-  {
-    /// Offset: 0x000 (R/ )  CPUID Base Register
-    const volatile uint32_t cpuid;
-    /// Offset: 0x004 (R/W)  Interrupt Control and State Register
-    volatile uint32_t icsr;
-    /// Offset: 0x008 (R/W)  Vector Table Offset Register
-    volatile uint32_t vtor;
-    /// Offset: 0x00C (R/W)  Application Interrupt and Reset Control Register
-    volatile uint32_t aircr;
-    /// Offset: 0x010 (R/W)  System Control Register
-    volatile uint32_t scr;
-    /// Offset: 0x014 (R/W)  Configuration Control Register
-    volatile uint32_t ccr;
-    /// Offset: 0x018 (R/W)  System Handlers Priority Registers (4-7, 8-11, 5)
-    std::array<volatile uint8_t, 12U> shp;
-    /// Offset: 0x024 (R/W)  System Handler Control and State Register
-    volatile uint32_t shcsr;
-    /// Offset: 0x028 (R/W)  Configurable Fault Status Register
-    volatile uint32_t cfsr;
-    /// Offset: 0x02C (R/W)  HardFault Status Register
-    volatile uint32_t hfsr;
-    /// Offset: 0x030 (R/W)  Debug Fault Status Register
-    volatile uint32_t dfsr;
-    /// Offset: 0x034 (R/W)  MemManage Fault Address Register
-    volatile uint32_t mmfar;
-    /// Offset: 0x038 (R/W)  BusFault Address Register
-    volatile uint32_t bfar;
-    /// Offset: 0x03C (R/W)  Auxiliary Fault Status Register
-    volatile uint32_t afsr;
-    /// Offset: 0x040 (R/ )  Processor Feature Register
-    const std::array<volatile uint32_t, 2U> pfr;
-    /// Offset: 0x048 (R/ )  Debug Feature Register
-    const volatile uint32_t dfr;
-    /// Offset: 0x04C (R/ )  Auxiliary Feature Register
-    const volatile uint32_t adr;
-    /// Offset: 0x050 (R/ )  Memory Model Feature Register
-    const std::array<volatile uint32_t, 4U> mmfr;
-    /// Offset: 0x060 (R/ )  Instruction Set Attributes Register
-    const std::array<volatile uint32_t, 5U> isar;
-    /// Reserved 0
-    std::array<uint32_t, 5U> reserved0;
-    /// Offset: 0x088 (R/W)  Coprocessor Access Control Register
-    volatile uint32_t cpacr;
-  };
-
   /// Structure type to access the Nested Vectored Interrupt Controller (NVIC)
   struct nvic_register_t
   {
@@ -100,14 +55,8 @@ public:
   /// NVIC address
   static constexpr intptr_t nvic_address = 0xE000'E100UL;
 
-  /// System control block address
-  static constexpr intptr_t scb_address = 0xE000'ED00UL;
-
   /// The core interrupts that all cortex m3, m4, m7 processors have
   static constexpr int core_interrupts = 16;
-
-  /// Pointer to Cortex M system control block registers
-  static inline auto* scb = reinterpret_cast<scb_registers_t*>(scb_address);
 
   /// Pointer to Cortex M Nested Vector Interrupt Controller registers
   static inline auto* nvic = reinterpret_cast<nvic_register_t*>(nvic_address);
@@ -253,7 +202,7 @@ public:
   template<size_t VectorCount>
   static void initialize()
   {
-    if constexpr (embed::config::is_a_test()) {
+    if constexpr (embed::is_a_test()) {
       setup_for_unittesting();
     }
 
@@ -275,7 +224,7 @@ public:
 
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
-    scb->vtor = reinterpret_cast<intptr_t>(vector_buffer.data());
+    system_control().set_interrupt_vector_table_address(vector_buffer.data());
   }
 
   /**
@@ -296,7 +245,7 @@ public:
   explicit interrupt(irq_t p_irq)
     : m_irq(p_irq)
   {
-    if constexpr (embed::config::is_a_test()) {
+    if constexpr (embed::is_a_test()) {
       setup_for_unittesting();
     }
   }
@@ -308,12 +257,10 @@ public:
   static void setup_for_unittesting()
   {
     // Dummy registers for unit testing
-    static scb_registers_t dummy_scb{};
     static nvic_register_t dummy_nvic{};
 
     // Replace the address of the scb and nvic pointers with the dummystructures
     // so that they can be inspected during unit tests.
-    scb = &dummy_scb;
     nvic = &dummy_nvic;
   }
 
