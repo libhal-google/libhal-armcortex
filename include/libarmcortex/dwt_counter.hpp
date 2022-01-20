@@ -134,7 +134,7 @@ public:
     , m_overflow_count(0)
     , m_period(0)
   {
-    if constexpr (embed::config::is_a_test()) {
+    if constexpr (embed::is_a_test()) {
       setup_for_unittesting();
     }
   }

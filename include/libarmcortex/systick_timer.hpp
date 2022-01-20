@@ -106,7 +106,7 @@ public:
     : m_input_frequency(p_input_frequency)
     , m_source(p_source)
   {
-    if constexpr (embed::config::is_a_test()) {
+    if constexpr (embed::is_a_test()) {
       setup_for_unittesting();
     }
   }

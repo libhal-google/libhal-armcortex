@@ -28,7 +28,7 @@ boost::ut::suite interrupt_test = [] {
     expect(that % nullptr != interrupt::interrupt_vector_table.data());
     expect(that % (expected_interrupt_count + interrupt::core_interrupts) ==
            interrupt::interrupt_vector_table.size());
-    expect(that % pointer_value == interrupt::scb->vtor);
+    expect(that % pointer_value == system_control::scb->vtor);
   };
 
   should("interrupt::enable()") = [&] {

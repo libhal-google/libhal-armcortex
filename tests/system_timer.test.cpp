@@ -1,41 +1,41 @@
 #include <boost/ut.hpp>
-#include <libarmcortex/system_timer.hpp>
+#include <libarmcortex/systick_timer.hpp>
 
 namespace embed::cortex_m {
-boost::ut::suite system_timer_test = []() {
+boost::ut::suite systick_timer_test = []() {
   using namespace boost::ut;
   using namespace std::chrono_literals;
+  using namespace embed::literals;
 
-  system_timer test_subject(1'000'000 /* MHz */);
+  systick_timer test_subject(1_MHz);
   static constexpr size_t ivt_count = 20;
   interrupt::initialize<ivt_count>();
 
-
-  should("system_timer::driver_initialize()") = [&] {
+  should("systick_timer::driver_initialize()") = [&] {
     // Setup
     // Exercise
     // Verify
   };
 
-  should("system_timer::is_running()") = [&] {
+  should("systick_timer::is_running()") = [&] {
     // Setup
     // Exercise
     // Verify
   };
 
-  should("system_timer::clear()") = [&] {
+  should("systick_timer::clear()") = [&] {
     // Setup
     // Exercise
     // Verify
   };
 
-  should("system_timer::schedule()") = [&] {
+  should("systick_timer::schedule()") = [&] {
     // Setup
     // Exercise
     // Verify
   };
 
-  should("system_timer::disable()") = [&] {
+  should("systick_timer::disable()") = [&] {
     // Setup
     // Exercise
     // Verify
