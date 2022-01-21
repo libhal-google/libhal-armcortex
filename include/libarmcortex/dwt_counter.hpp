@@ -5,6 +5,7 @@
 
 #include <libembeddedhal/config.hpp>
 #include <libembeddedhal/counter/counter.hpp>
+#include <libembeddedhal/overflow_counter.hpp>
 
 namespace embed::cortex_m {
 /**
@@ -130,9 +131,8 @@ public:
    *
    */
   dwt_counter()
-    : m_previous_count(0)
-    , m_overflow_count(0)
-    , m_period(0)
+    : m_period(0)
+    , m_count{}
   {
     if constexpr (embed::is_a_test()) {
       setup_for_unittesting();
@@ -181,8 +181,7 @@ public:
         break;
       case controls::reset:
         dwt->cyccnt = 0;
-        m_previous_count = 0;
-        m_overflow_count = 0;
+        m_count.reset();
         break;
     }
     return {};
@@ -222,33 +221,13 @@ public:
    *
    * @return boost::leaf::result<uint64_t>
    */
-  boost::leaf::result<uint64_t> count() override { return count64(); }
-
-private:
-  /// Return the current number of cycles of the CPU
-  uint32_t count32() { return dwt->cyccnt; }
-
-  /// Return the current number of ticks CPU and detects overflows which can be
-  /// used to get uptime durations up to 2^64.
-  uint64_t count64()
+  boost::leaf::result<uint64_t> count() override
   {
-    auto current_count = count32();
-
-    if (m_previous_count > current_count) {
-      m_overflow_count++;
-    }
-
-    m_previous_count = current_count;
-
-    uint64_t combined_count = m_overflow_count;
-    combined_count <<= 32;
-    combined_count |= current_count;
-
-    return combined_count;
+    return m_count.update(dwt->cyccnt);
   }
 
-  uint32_t m_previous_count = 0;
-  uint32_t m_overflow_count = 0;
+private:
   std::chrono::nanoseconds m_period;
+  overflow_counter<32> m_count;
 };
 }  // namespace embed::cortex_m
