@@ -226,11 +226,7 @@ public:
 
 private:
   /// Return the current number of cycles of the CPU
-  uint32_t count32()
-  {
-    m_previous_count = dwt->cyccnt;
-    return m_previous_count;
-  }
+  uint32_t count32() { return dwt->cyccnt; }
 
   /// Return the current number of ticks CPU and detects overflows which can be
   /// used to get uptime durations up to 2^64.
