@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cinttypes>
+#include <cstdint>
 #include <cstring>
 
 // These need to be supplied by the linker script if the application developer
@@ -24,6 +24,16 @@ extern "C"
    *
    */
   extern uint32_t __data_size;
+  /**
+   * @brief this symbol is placed at the start of the bss section in RAM.
+   *
+   */
+  extern uint32_t __bss_start;
+  /**
+   * @brief This is the length of the bss section to write zeros to.
+   *
+   */
+  extern uint32_t __bss_size;
 }
 
 namespace embed::cortex_m {
@@ -42,12 +52,25 @@ namespace embed::cortex_m {
  * of the application.
  *
  */
-void initialize_data_section()
+inline void initialize_data_section()
 {
   // Initialize statically allocated data by coping the data section from ROM to
   // RAM. CRT0.o/.s does not perform .data section initialization so it must be
   // done by initialize_platform.
   intptr_t data_size = reinterpret_cast<intptr_t>(&__data_size);
   memcpy(&__data_start, &__data_source, data_size);
+}
+/**
+ * @brief Initialize the BSS (uninitialized data section) to all zeros.
+ *
+ * Not required if the C Runtime 0 (crt0.s/.a/.o) is used as a startup routine.
+ */
+inline void initialize_bss_section()
+{
+  // Initialize statically allocated data by coping the data section from ROM to
+  // RAM. CRT0.o/.s does not perform .data section initialization so it must be
+  // done by initialize_platform.
+  intptr_t bss_size = reinterpret_cast<intptr_t>(&__bss_size);
+  memset(&__bss_start, 0, bss_size);
 }
 }  // namespace embed::cortex_m

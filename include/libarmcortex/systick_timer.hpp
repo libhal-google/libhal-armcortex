@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cinttypes>
+#include <cstdint>
 #include <functional>
 
 #include "interrupt.hpp"
@@ -64,7 +64,7 @@ public:
    * @brief Defines the set of clock sources for the SysTick timer
    *
    */
-  enum class clock_source : uint8_t
+  enum class clock_source
   {
     /// Use an external clock source. What this source is depends on the
     /// architecture and configuration of the platform.
@@ -78,74 +78,59 @@ public:
   /// The IRQ number for the SysTick interrupt vector
   static constexpr int irq = -1;
 
-  /// Address of the ARM Cortex SysTick peripheral.
-  inline static auto* sys_tick = reinterpret_cast<registers*>(address);
-
-  /**
-   * @brief Setup the driver for unit testing
-   *
-   */
-  static void setup_for_unittesting()
+  /// @return auto* - Address of the ARM Cortex SysTick peripheral
+  static auto* sys_tick()
   {
-    // Dummy registers for unit testing.
-    static registers dummy_sys_tick{};
-
-    // Replace the address of the peripheral pointer with the dummy structure so
-    // that they can be inspected during unit tests.
-    sys_tick = &dummy_sys_tick;
+    if constexpr (embed::is_a_test()) {
+      static registers dummy_sys_tick{};
+      return &dummy_sys_tick;
+    }
+    return reinterpret_cast<registers*>(address);
   }
 
   /**
    * @brief Construct a new systick_timer timer object
    *
-   * @param p_input_frequency - SysTick timer input clock frequency
-   * @param p_source - which clock source will feed the SysTick timer
+   * @param p_frequency - the clock source's frequency
+   * @param p_source - the source of the clock to the systick timer
    */
-  systick_timer(frequency p_input_frequency,
+  systick_timer(frequency p_frequency,
                 clock_source p_source = clock_source::processor)
-    : m_input_frequency(p_input_frequency)
-    , m_source(p_source)
+    : m_frequency(p_frequency)
   {
-    if constexpr (embed::is_a_test()) {
-      setup_for_unittesting();
-    }
+    register_cpu_frequency(p_frequency, p_source);
   }
 
   /**
-   * @brief Change the input clock's period length.
+   * @brief Inform the driver of the operating frequency of the CPU in order to
+   * generate the correct uptime.
    *
-   * Will not effect a currently scheduled event.
+   * Use this when the CPU's operating frequency has changed and no longer
+   * matches the frequency supplied to the constructor. Care should be taken
+   * when execting this function when there is the potentially other parts of
+   * the system that depend on this counter's uptime to operate.
    *
-   * @param p_input_frequency - new input clock period
+   * This will clear any ongoing scheduled events as the timing will no longer
+   * be valid.
+   *
+   * @param p_frequency - the clock source's frequency
+   * @param p_source - the source of the clock to the systick timer
    */
-  void input_frequency(frequency p_input_frequency)
+  void register_cpu_frequency(frequency p_frequency,
+                              clock_source p_source = clock_source::processor)
   {
-    m_input_frequency = p_input_frequency;
-  }
+    stop();
+    m_frequency = p_frequency;
 
-  /**
-   * @brief Get the current clock period length.
-   *
-   * @return uint32_t - get the currently assigned clock period
-   */
-  frequency input_frequency() { return m_input_frequency; }
-
-  /**
-   * @brief initialize the driver
-   *
-   * @return boost::leaf::result<void> - will never return an error
-   */
-  boost::leaf::result<void> driver_initialize() override
-  {
     // Since reloads only occur when the current_value falls from 1 to 0,
     // setting this register directly to zero from any other number will disable
     // reloading of the register and will stop the timer.
-    sys_tick->current_value = 0;
+    sys_tick()->current_value = 0;
 
-    auto control = xstd::bitmanip(sys_tick->control);
+    auto control = xstd::bitmanip(sys_tick()->control);
     control.set(control_register::enable_interrupt);
 
-    if (m_source == clock_source::processor) {
+    if (p_source == clock_source::processor) {
       control.set(control_register::clock_source);
     } else {
       control.reset(control_register::clock_source);
@@ -154,7 +139,7 @@ public:
     // Disable the counter if it was previously enabled.
     control.reset(control_register::enable_counter);
 
-    return {};
+    // control will be committed to "sys_tick()->control" on destruction
   }
 
   /**
@@ -164,9 +149,9 @@ public:
    * scheduled and is running, false otherwise.
    * @return boost::leaf::result<bool> - will never return an error
    */
-  boost::leaf::result<bool> is_running() override
+  boost::leaf::result<bool> driver_is_running() noexcept override
   {
-    return xstd::bitmanip(sys_tick->control)
+    return xstd::bitmanip(sys_tick()->control)
       .test(control_register::enable_counter);
   }
 
@@ -176,7 +161,7 @@ public:
    *
    * @return boost::leaf::result<void> - will never return an error
    */
-  boost::leaf::result<void> clear() override
+  boost::leaf::result<void> driver_clear() noexcept override
   {
     // All that is needed is to stop the timer. When the timer is started again
     // via `schedule()`, the timer value will be reloaded/reset.
@@ -188,29 +173,29 @@ public:
    * @brief Schedule the timer to call the callback when the expiration delay
    * time has elapsed.
    *
+   * This function must not be called before the interrupt vector table has been
+   * initialized.
+   *
    * @param p_callback - callback to be called when the timer expires.
    * @param p_delay - the amount of time before the callback is called.
    * @return boost::leaf::result<void> - can return `delay_too_small` and
    * `delay_too_large`.
    */
-  boost::leaf::result<void> schedule(std::function<void(void)> p_callback,
-                                     std::chrono::nanoseconds p_delay) override
+  boost::leaf::result<void> driver_schedule(
+    std::function<void(void)> p_callback,
+    std::chrono::nanoseconds p_delay) noexcept override
   {
-    static constexpr frequency::int_t minimum = 0x00000001;
-    static constexpr frequency::int_t maximum = 0x00FFFFFF;
+    static constexpr std::int64_t minimum = 0x00000001;
+    static constexpr std::int64_t maximum = 0x00FFFFFF;
 
-    auto cycle_count = m_input_frequency.cycles_per(p_delay);
+    auto cycle_count = m_frequency.cycles_per(p_delay);
 
-    if (cycle_count <= minimum) {
-      auto min_duration = m_input_frequency.duration_from_cycles(minimum);
-      return boost::leaf::new_error(delay_too_small{
+    if (minimum < cycle_count && cycle_count <= maximum) {
+      auto min_duration = m_frequency.duration_from_cycles(minimum);
+      auto max_duration = m_frequency.duration_from_cycles(maximum);
+      return boost::leaf::new_error(out_of_bounds{
         .invalid = p_delay,
         .minimum = min_duration,
-      });
-    } else if (cycle_count >= maximum) {
-      auto max_duration = m_input_frequency.duration_from_cycles(maximum);
-      return boost::leaf::new_error(delay_too_large{
-        .invalid = p_delay,
         .maximum = max_duration,
       });
     }
@@ -223,11 +208,12 @@ public:
     // the program, so there will never be a dangling reference.
     auto handler = static_callable<systick_timer, 0, void(void)>(p_callback);
 
-    // Enable interrupt service routine for SysTick using the callback
-    cortex_m::interrupt(irq).enable(handler.get_handler());
+    // Enable interrupt service routine for SysTick and use this callback as the
+    // handler
+    BOOST_LEAF_CHECK(cortex_m::interrupt(irq).enable(handler.get_handler()));
 
     // Set the time reload value
-    sys_tick->reload = static_cast<uint32_t>(cycle_count);
+    sys_tick()->reload = static_cast<uint32_t>(cycle_count);
 
     // Starting the timer will restart the count
     start();
@@ -243,21 +229,22 @@ public:
   ~systick_timer()
   {
     stop();
-    cortex_m::interrupt(irq).disable();
+    if (!cortex_m::interrupt(irq).disable()) {
+      std::abort();
+    }
   }
 
 private:
   void start()
   {
-    xstd::bitmanip(sys_tick->control).set(control_register::enable_counter);
+    xstd::bitmanip(sys_tick()->control).set(control_register::enable_counter);
   }
 
   void stop()
   {
-    xstd::bitmanip(sys_tick->control).reset(control_register::enable_counter);
+    xstd::bitmanip(sys_tick()->control).reset(control_register::enable_counter);
   }
 
-  frequency m_input_frequency;
-  clock_source m_source;
+  frequency m_frequency = frequency(1'000'000);
 };
 }  // namespace embed::cortex_m

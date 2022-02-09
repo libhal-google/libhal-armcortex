@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include <cinttypes>
+#include <cstdint>
 
 #include <libembeddedhal/config.hpp>
 #include <libembeddedhal/counter/counter.hpp>
@@ -12,7 +12,6 @@ namespace embed::cortex_m {
  * @brief A counter with a frequency fixed to the CPU clock rate.
  *
  * This driver is supported for Cortex M3 devices and above.
- * Do not use this counter if the period needs to be changed.
  *
  */
 class dwt_counter : public embed::counter
@@ -102,85 +101,85 @@ public:
   /// Address of the Cortex M CoreDebug module
   static constexpr intptr_t core_debug_address = 0xE000EDF0UL;
 
-  /// Pointer to the DWT peripheral
-  static inline auto* dwt = reinterpret_cast<dwt_registers_t*>(0xE0001000UL);
-
-  /// Pointer to the Core Debug module
-  static inline auto* core =
-    reinterpret_cast<core_debug_registers_t*>(core_debug_address);
-
-  /**
-   * @brief Setup the application for unit testing which means replacing the
-   * register addresses with statically allocated objects.
-   *
-   */
-  static void setup_for_unittesting()
+  /// @return auto* - Address of the DWT peripheral
+  static auto* dwt() noexcept
   {
-    // Dummy registers for unit testing
-    static dwt_registers_t dummy_dwt{};
-    static core_debug_registers_t dummy_core{};
+    if constexpr (embed::is_a_test()) {
+      static dwt_registers_t dummy_dwt{};
+      return &dummy_dwt;
+    }
+    return reinterpret_cast<dwt_registers_t*>(dwt_address);
+  }
 
-    // Replace the address of the peripheral pointer with the dummy structure so
-    // that they can be inspected during unit tests.
-    dwt = &dummy_dwt;
-    core = &dummy_core;
+  /// @return auto* - Address of the Core Debug module
+  static auto* core() noexcept
+  {
+    if constexpr (embed::is_a_test()) {
+      static core_debug_registers_t dummy_core{};
+      return &dummy_core;
+    }
+    return reinterpret_cast<core_debug_registers_t*>(core_debug_address);
   }
 
   /**
    * @brief Construct a new dwt counter object
    *
+   * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  dwt_counter()
-    : m_period(0)
+  dwt_counter(frequency p_cpu_frequency) noexcept
+    : m_cpu_frequency(p_cpu_frequency)
     , m_count{}
   {
-    if constexpr (embed::is_a_test()) {
-      setup_for_unittesting();
-    }
+    core()->demcr = (core()->demcr | core_trace_enable);
+
+    // No need to check return value since this function never fails
+    (void)driver_control(controls::reset);
+    (void)driver_control(controls::start);
   }
 
   /**
-   * @brief Enable trace control in CoreDebug system as well as stop & reset the
-   * counter.
+   * @brief Inform the driver of the operating frequency of the CPU in order to
+   * generate the correct uptime.
    *
-   * @return boost::leaf::result<void> - Never returns an error.
+   * Use this when the CPU's operating frequency has changed and no longer
+   * matches the frequency supplied to the constructor. Care should be taken
+   * when execting this function when there is the potentially other parts of
+   * the system that depend on this counter's uptime to operate.
+   *
+   * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  boost::leaf::result<void> driver_initialize() override
+  void register_cpu_frequency(frequency p_cpu_frequency) noexcept
   {
-    core->demcr = (core->demcr | core_trace_enable);
-
-    control(controls::stop);
-    control(controls::reset);
-
-    return {};
+    m_cpu_frequency = p_cpu_frequency;
   }
 
   /**
    * @return boost::leaf::result<bool> returns true if the counter is running.
    * Never returns an error.
    */
-  boost::leaf::result<bool> is_running() override
+  bool driver_is_running() noexcept override
   {
-    return (dwt->ctrl & enable_cycle_count) != 0;
+    return (dwt()->ctrl & enable_cycle_count) != 0;
   }
 
   /**
    * @brief Control the behavior of the counter
    *
    * @param p_control - counter control
-   * @return boost::leaf::result<void> - never returns an error.
+   * @return boost::leaf::result<void> - this driver's implementation never
+   * returns an error.
    */
-  boost::leaf::result<void> control(controls p_control) override
+  boost::leaf::result<void> driver_control(controls p_control) noexcept override
   {
     switch (p_control) {
       case controls::start:
-        dwt->ctrl = (dwt->ctrl | enable_cycle_count);
+        dwt()->ctrl = (dwt()->ctrl | enable_cycle_count);
         break;
       case controls::stop:
-        dwt->ctrl = (dwt->ctrl & ~enable_cycle_count);
+        dwt()->ctrl = (dwt()->ctrl & ~enable_cycle_count);
         break;
       case controls::reset:
-        dwt->cyccnt = 0;
+        dwt()->cyccnt = 0;
         m_count.reset();
         break;
     }
@@ -188,46 +187,18 @@ public:
   }
 
   /**
-   * @brief The period setter does not work like a typical counter. Typical
-   * counters must use the period given here to generate a count that fits that
-   * period. But the period for a DWT counter is determined by the cycle count
-   * of the ARM Cortex Mx CPU. The period should be set with that value so that
-   * it can be returned the period() function. If a set period must be used for
-   * your application, then the dwt counter should not be used.
+   * @brief Return the number of nanoseconds since the counter has started.
    *
-   * @param p_period - operating period of the DWT counter NOT the period to set
-   * the DWT counter to
-   * @return boost::leaf::result<void> - always successful value
+   * @return std::chrono::nanoseconds - nanoseconds since the counter has
+   * started.
    */
-  boost::leaf::result<void> period(std::chrono::nanoseconds p_period) override
+  std::chrono::nanoseconds driver_uptime() noexcept override
   {
-    m_period = p_period;
-    return {};
-  }
-
-  /**
-   * @brief Return previously set period
-   *
-   * @return boost::leaf::result<std::chrono::nanoseconds> previously set
-   * period, will not return an error.
-   */
-  boost::leaf::result<std::chrono::nanoseconds> period() override
-  {
-    return m_period;
-  }
-
-  /**
-   * @brief Return the current number of CPU Cycles of the CPU
-   *
-   * @return boost::leaf::result<uint64_t>
-   */
-  boost::leaf::result<uint64_t> count() override
-  {
-    return m_count.update(dwt->cyccnt);
+    return m_cpu_frequency.duration_from_cycles(m_count.update(dwt()->cyccnt));
   }
 
 private:
-  std::chrono::nanoseconds m_period;
-  overflow_counter<32> m_count;
+  frequency m_cpu_frequency{ 1'000'000 };
+  overflow_counter<32> m_count{};
 };
 }  // namespace embed::cortex_m
