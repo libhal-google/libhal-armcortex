@@ -23,7 +23,7 @@ public:
     /// Offset: 0x004 (R/W)  Interrupt Control and State Register
     volatile uint32_t icsr;
     /// Offset: 0x008 (R/W)  Vector Table Offset Register
-    volatile uint32_t vtor;
+    volatile intptr_t vtor;
     /// Offset: 0x00C (R/W)  Application Interrupt and Reset Control Register
     volatile uint32_t aircr;
     /// Offset: 0x010 (R/W)  System Control Register
@@ -65,34 +65,15 @@ public:
   /// System control block address
   static constexpr intptr_t scb_address = 0xE000'ED00UL;
 
-  /// Pointer to Cortex M system control block registers
-  static inline auto* scb = reinterpret_cast<scb_registers_t*>(scb_address);
-
-  /**
-   * @brief Setup system registers for unit testing
-   *
-   */
-  static void setup_for_unittesting()
-  {
-    // Dummy registers for unit testing
-    static scb_registers_t dummy_scb{};
-
-    // Replace the address of the scb and nvic pointers with the dummystructures
-    // so that they can be inspected during unit tests.
-    scb = &dummy_scb;
-  }
-
-  /**
-   * @brief Construct a new system control block object
-   *
-   */
-  system_control()
+  /// @return auto* - Address of the Cortex M system control block register
+  static auto* scb()
   {
     if constexpr (embed::is_a_test()) {
-      setup_for_unittesting();
+      static scb_registers_t dummy_scb{};
+      return &dummy_scb;
     }
+    return reinterpret_cast<scb_registers_t*>(scb_address);
   }
-
   /**
    * @brief Enable the floating point unit coprocessor within Cortex M4 and
    * above processor.
@@ -100,8 +81,8 @@ public:
    */
   void initialize_floating_point_unit()
   {
-    scb->cpacr = scb->cpacr | ((0b11 << 10 * 2) | /* set CP10 Full Access */
-                               (0b11 << 11 * 2)); /* set CP11 Full Access */
+    scb()->cpacr = scb()->cpacr | ((0b11 << 10 * 2) | /* set CP10 Full Access */
+                                   (0b11 << 11 * 2)); /* set CP11 Full Access */
   }
 
   /**
@@ -135,7 +116,21 @@ public:
   {
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
-    scb->vtor = reinterpret_cast<intptr_t>(p_table_location);
+    scb()->vtor = reinterpret_cast<intptr_t>(p_table_location);
+  }
+  /**
+   * @brief Get the address of the systems interrupt vector table.
+   *
+   * On reset the VTOR register is set to 0x0000'0000 or nullptr.
+   *
+   * @return void* - address within VTOR the interrupt vector table relocation
+   * register.
+   */
+  void* get_interrupt_vector_table_address()
+  {
+    // Relocate the interrupt vector table the vector buffer. By default this
+    // will be set to the address of the start of flash memory for the MCU.
+    return reinterpret_cast<void*>(scb()->vtor);
   }
 };
 }  // namespace embed::cortex_m

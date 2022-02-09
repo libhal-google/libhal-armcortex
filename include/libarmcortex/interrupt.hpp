@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <libembeddedhal/config.hpp>
+#include <libembeddedhal/error.hpp>
 
 #include "system_control.hpp"
 
@@ -58,11 +59,18 @@ public:
   /// The core interrupts that all cortex m3, m4, m7 processors have
   static constexpr int core_interrupts = 16;
 
-  /// Pointer to Cortex M Nested Vector Interrupt Controller registers
-  static inline auto* nvic = reinterpret_cast<nvic_register_t*>(nvic_address);
+  /// @return auto* - Address of the Nested Vector Interrupt Controller register
+  static auto* nvic()
+  {
+    if constexpr (embed::is_a_test()) {
+      static nvic_register_t dummy_nvic{};
+      return &dummy_nvic;
+    }
+    return reinterpret_cast<nvic_register_t*>(nvic_address);
+  }
 
   /// Pointer to a statically allocated interrupt vector table
-  static inline std::span<interrupt_pointer> interrupt_vector_table;
+  static inline std::span<interrupt_pointer> vector_table;
 
   /**
    * @brief represents an interrupt request number along with helper functions
@@ -129,11 +137,11 @@ public:
      * registers within the "iser" and "icer" arrays. This function will return
      * the index of which 32-bit register contains the enable bit.
      *
-     * @return constexpr uint32_t - array index
+     * @return constexpr int - array index
      */
-    [[nodiscard]] constexpr uint32_t register_index() const
+    [[nodiscard]] constexpr int register_index() const
     {
-      return static_cast<uint32_t>(m_irq) >> index_position;
+      return m_irq >> index_position;
     }
     /**
      * @brief return a mask with a 1 bit in the enable position for this irq_t.
@@ -142,7 +150,7 @@ public:
      */
     [[nodiscard]] constexpr uint32_t enable_mask() const
     {
-      return 1U << (static_cast<uint32_t>(m_irq) & enable_mask_code);
+      return 1U << (m_irq & enable_mask_code);
     }
     /**
      * @brief
@@ -162,13 +170,65 @@ public:
      */
     [[nodiscard]] constexpr bool is_valid() const
     {
-      const size_t last_irq = (interrupt_vector_table.size() - core_interrupts);
+      int table_size = static_cast<int>(vector_table.size());
+      const int last_irq = table_size - core_interrupts;
       return std::cmp_greater(m_irq, -core_interrupts) &&
              std::cmp_less(m_irq, last_irq);
     }
+    /**
+     * @return constexpr int - the interrupt request number
+     */
+    [[nodiscard]] constexpr int get_irq_number() { return m_irq; }
 
   private:
     int m_irq = 0;
+  };
+
+  /**
+   * @brief Error indicating that the interrupt vector table is not initialized
+   *
+   * This error usually indicates that there is a bug in a driver or application
+   * because it did not initialize the vector table near the start of the
+   * application.
+   *
+   * But this could also be used to signal to run interrupt::initialize()
+   *
+   */
+  struct vector_table_not_initialized
+  {};
+
+  /**
+   * @brief An error indicating that an invalid IRQ has been passed to the
+   * interrupt class which is outside of the bounds of the interrupt vector
+   * table
+   *
+   * This sort of error is not usually recoverable and indicates an error in a
+   * driver.
+   *
+   */
+  struct invalid_irq
+  {
+    /// Beginning IRQ (always -16)
+    static constexpr int begin = -core_interrupts;
+
+    /**
+     * @brief Construct a new invalid irq object
+     *
+     * @param p_irq - the offending IRQ number
+     */
+    invalid_irq(irq_t p_irq)
+      : invalid{}
+      , end{}
+    {
+      invalid = p_irq.get_irq_number();
+      int table_size = static_cast<int>(vector_table.size());
+      end = table_size - core_interrupts;
+    }
+
+    /// Offending IRQ number
+    int invalid{};
+    /// The last IRQ in the table
+    int end{};
   };
 
   /// Place holder interrupt that performs no work
@@ -178,53 +238,81 @@ public:
    * @brief Initializes the interrupt vector table.
    *
    * This template function does the following:
-   * - Statically allocates a 64-byte aligned an interrupt vector table the
+   * - Statically allocates a 512-byte aligned an interrupt vector table the
    *   size of VectorCount.
    * - Set the default handlers for all interrupt vectors to the "nop" function
    *   which does nothing
-   * - Set interrupt_vector_table span to the statically allocated vector table.
+   * - Set vector_table span to the statically allocated vector table.
    * - Finally it relocates the system's interrupt vector table away from the
    *   hard coded vector table in ROM/Flash memory to the statically allocated
    *   table in RAM.
    *
-   * This function should only be called once in the life time of the
-   * application, perferably at or near the start of main before any other
-   * peripherals that may need the interrupt vector table are initialized.
-   * Calling this multiple times can have a multitude of effects and undefined
-   * behavior.
+   * Internally, this function checks if it has been called before and will
+   * simply return early if so. Making this function safe to call multiple times
+   * so long as the VectorCount template parameter is the same with each
+   * invocation.
    *
    * Calling this function with differing VectorCount values will result in
    * multiple statically allocated interrupt vector tables, which will simply
-   * waste space in RAM.
+   * waste space in RAM. Only the first call is used as the IVT.
    *
    * @tparam VectorCount - the number of interrupts available for this system
    */
   template<size_t VectorCount>
   static void initialize()
   {
-    if constexpr (embed::is_a_test()) {
-      setup_for_unittesting();
-    }
-
     // Statically allocate a buffer of vectors to be used as the new IVT.
     static constexpr size_t total_vector_count = VectorCount + core_interrupts;
-    alignas(64) static std::array<interrupt_pointer, total_vector_count>
+    alignas(512) static std::array<interrupt_pointer, total_vector_count>
       vector_buffer{};
 
-    // Will fill the interrupt handler and vector table with a function that
-    // does nothing.
-    std::fill(vector_buffer.begin(), vector_buffer.end(), nop);
+    if (system_control().get_interrupt_vector_table_address() == nullptr) {
+      // Assign the statically allocated vector within this scope to the global
+      // vector_table span so that it can be accessed in other
+      // functions. This is valid because the interrupt vector table has static
+      // storage duration and will exist throughout the duration of the
+      // application.
+      vector_table = vector_buffer;
 
-    // Assign the statically allocated vector within this scope to the global
-    // interrupt_vector_table span so that it can be accessed in other
-    // functions. This is valid because the interrupt vector table has static
-    // storage duration and will exist throughout the duration of the
-    // application.
-    interrupt_vector_table = vector_buffer;
+      // Will fill the interrupt handler and vector table with a function that
+      // does nothing.
+      std::fill(vector_buffer.begin(), vector_buffer.end(), nop);
 
-    // Relocate the interrupt vector table the vector buffer. By default this
-    // will be set to the address of the start of flash memory for the MCU.
-    system_control().set_interrupt_vector_table_address(vector_buffer.data());
+      // Relocate the interrupt vector table the vector buffer. By default this
+      // will be set to the address of the start of flash memory for the MCU.
+      system_control().set_interrupt_vector_table_address(vector_buffer.data());
+    }
+  }
+
+  /**
+   * @brief Reinitialize vector table
+   *
+   * Will reset the entries of the vector table. Careful to not use this after
+   * any drivers have already put entries on to the vector table. This will also
+   * disable all interrupts currently enabled on the system.
+   *
+   * @tparam VectorCount - the number of interrupts available for this system
+   */
+  template<size_t VectorCount>
+  static void reinitialize()
+  {
+    // Set all bits in the interrupt clear register to 1s to disable those
+    // interrupt vectors.
+    for (auto& clear_interrupt : nvic()->icer) {
+      clear_interrupt = 0xFFFF'FFFF;
+    }
+
+    if (embed::is_a_test()) {
+      for (auto& set_interrupt : nvic()->iser) {
+        set_interrupt = 0x0000'0000;
+      }
+      for (auto& clear_interrupt : nvic()->icer) {
+        clear_interrupt = 0x0000'0000;
+      }
+    }
+
+    system_control().set_interrupt_vector_table_address(nullptr);
+    initialize<VectorCount>();
   }
 
   /**
@@ -232,10 +320,7 @@ public:
    *
    * @return const auto& - interrupt vector table
    */
-  static const auto& get_interrupt_vector_table()
-  {
-    return interrupt_vector_table;
-  }
+  static const auto& get_vector_table() { return vector_table; }
 
   /**
    * @brief Construct a new interrupt object
@@ -244,25 +329,7 @@ public:
    */
   explicit interrupt(irq_t p_irq)
     : m_irq(p_irq)
-  {
-    if constexpr (embed::is_a_test()) {
-      setup_for_unittesting();
-    }
-  }
-
-  /**
-   * @brief Setup system registers for unit testing
-   *
-   */
-  static void setup_for_unittesting()
-  {
-    // Dummy registers for unit testing
-    static nvic_register_t dummy_nvic{};
-
-    // Replace the address of the scb and nvic pointers with the dummystructures
-    // so that they can be inspected during unit tests.
-    nvic = &dummy_nvic;
-  }
+  {}
 
   /**
    * @brief enable interrupt and set the service routine handler.
@@ -272,19 +339,16 @@ public:
    * @return true - successfully installed handler and enabled interrupt
    * @return false - irq value is outside of the bounds of the table
    */
-  bool enable(interrupt_pointer p_handler)
+  [[nodiscard]] boost::leaf::result<void> enable(interrupt_pointer p_handler)
   {
-    // IRQ must be between -16 < irq < last_irq
-    if (!m_irq.is_valid()) {
-      return false;
-    }
+    BOOST_LEAF_CHECK(sanity_check());
 
-    interrupt_vector_table[m_irq.vector_index()] = p_handler;
+    vector_table[m_irq.vector_index()] = p_handler;
 
     if (!m_irq.default_enabled()) {
       nvic_enable_irq();
     }
-    return true;
+    return {};
   }
 
   /**
@@ -293,19 +357,16 @@ public:
    * @return true - successfully disabled interrupt
    * @return false - irq value is outside of the bounds of the table
    */
-  bool disable()
+  [[nodiscard]] boost::leaf::result<void> disable()
   {
-    // IRQ must be between -16 < irq < last_irq
-    if (!m_irq.is_valid()) {
-      return false;
-    }
+    BOOST_LEAF_CHECK(sanity_check());
 
-    interrupt_vector_table[m_irq.vector_index()] = nop;
+    vector_table[m_irq.vector_index()] = nop;
 
     if (!m_irq.default_enabled()) {
       nvic_disable_irq();
     }
-    return true;
+    return {};
   }
 
   /**
@@ -318,15 +379,13 @@ public:
    * @return true - the handler is equal to the handler in the table
    * @return false -  the handler is not at this index in the table
    */
-  bool verify_vector_enabled(interrupt_pointer p_handler)
+  [[nodiscard]] boost::leaf::result<bool> verify_vector_enabled(
+    interrupt_pointer p_handler)
   {
-    // Return early if the irq isn't even valid
-    if (!m_irq.is_valid()) {
-      return false;
-    }
+    BOOST_LEAF_CHECK(sanity_check());
 
     // Check if the handler match
-    auto irq_handler = interrupt_vector_table[m_irq.vector_index()];
+    auto irq_handler = vector_table[m_irq.vector_index()];
     bool handlers_are_the_same = (irq_handler == p_handler);
 
     if (!handlers_are_the_same) {
@@ -337,11 +396,29 @@ public:
       return true;
     }
 
-    uint32_t enable_register = nvic->iser.at(m_irq.register_index());
+    uint32_t enable_register = nvic()->iser.at(m_irq.register_index());
     return (enable_register & m_irq.enable_mask()) == 0U;
   }
 
 private:
+  boost::leaf::result<void> sanity_check()
+  {
+    if (!vector_table_is_initialized()) {
+      return boost::leaf::new_error(vector_table_not_initialized{});
+    }
+
+    if (!m_irq.is_valid()) {
+      return boost::leaf::new_error(invalid_irq(m_irq));
+    }
+
+    return {};
+  }
+
+  bool vector_table_is_initialized()
+  {
+    return system_control().get_interrupt_vector_table_address() != 0x0000'0000;
+  }
+
   /**
    * @brief Enables a device-specific interrupt in the NVIC interrupt
    * controller.
@@ -349,8 +426,8 @@ private:
    */
   void nvic_enable_irq()
   {
-    auto* interrupt_enable = &nvic->iser.at(m_irq.register_index());
-    *interrupt_enable = *interrupt_enable | m_irq.enable_mask();
+    auto* interrupt_enable = &nvic()->iser.at(m_irq.register_index());
+    *interrupt_enable = m_irq.enable_mask();
   }
 
   /**
@@ -360,8 +437,8 @@ private:
    */
   void nvic_disable_irq()
   {
-    auto* interrupt_clear = &nvic->icer.at(m_irq.register_index());
-    *interrupt_clear = *interrupt_clear | m_irq.enable_mask();
+    auto* interrupt_clear = &nvic()->icer.at(m_irq.register_index());
+    *interrupt_clear = m_irq.enable_mask();
   }
 
   irq_t m_irq;
