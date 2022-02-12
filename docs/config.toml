@@ -4,7 +4,7 @@ title = "libarmcortex docs"
 theme = "hugo-theme-relearn"
 
 [params]
-  themeVariant = "green"
+  themeVariant = "red"
 
 # For search functionality
 [outputs]
