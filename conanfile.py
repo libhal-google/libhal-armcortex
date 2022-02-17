@@ -30,4 +30,6 @@ class libarmcortex_conan(ConanFile):
     def requirements(self):
         self.requires("libembeddedhal/0.0.1@")
         self.requires("libxbitset/0.0.1@")
-        self.requires("boost-ext-ut/1.1.8@")
+
+    def build_requirements(self):
+        self.test_requires("boost-ext-ut/1.1.8@")
