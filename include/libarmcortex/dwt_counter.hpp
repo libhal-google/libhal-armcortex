@@ -126,15 +126,17 @@ public:
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  dwt_counter(frequency p_cpu_frequency) noexcept
+  dwt_counter(embed::frequency p_cpu_frequency) noexcept
     : m_cpu_frequency(p_cpu_frequency)
-    , m_count{}
   {
+    // Enable trace core
     core()->demcr = (core()->demcr | core_trace_enable);
 
-    // No need to check return value since this function never fails
-    (void)driver_control(controls::reset);
-    (void)driver_control(controls::start);
+    // Reset cycle count
+    dwt()->cyccnt = 0;
+
+    // Start cycle count
+    dwt()->ctrl = (dwt()->ctrl | enable_cycle_count);
   }
 
   /**
@@ -148,57 +150,17 @@ public:
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  void register_cpu_frequency(frequency p_cpu_frequency) noexcept
+  void register_cpu_frequency(embed::frequency p_cpu_frequency) noexcept
   {
     m_cpu_frequency = p_cpu_frequency;
   }
 
-  /**
-   * @return boost::leaf::result<bool> returns true if the counter is running.
-   * Never returns an error.
-   */
-  bool driver_is_running() noexcept override
-  {
-    return (dwt()->ctrl & enable_cycle_count) != 0;
-  }
-
-  /**
-   * @brief Control the behavior of the counter
-   *
-   * @param p_control - counter control
-   * @return boost::leaf::result<void> - this driver's implementation never
-   * returns an error.
-   */
-  boost::leaf::result<void> driver_control(controls p_control) noexcept override
-  {
-    switch (p_control) {
-      case controls::start:
-        dwt()->ctrl = (dwt()->ctrl | enable_cycle_count);
-        break;
-      case controls::stop:
-        dwt()->ctrl = (dwt()->ctrl & ~enable_cycle_count);
-        break;
-      case controls::reset:
-        dwt()->cyccnt = 0;
-        m_count.reset();
-        break;
-    }
-    return {};
-  }
-
-  /**
-   * @brief Return the number of nanoseconds since the counter has started.
-   *
-   * @return std::chrono::nanoseconds - nanoseconds since the counter has
-   * started.
-   */
-  std::chrono::nanoseconds driver_uptime() noexcept override
-  {
-    return m_cpu_frequency.duration_from_cycles(m_count.update(dwt()->cyccnt));
-  }
-
 private:
-  frequency m_cpu_frequency{ 1'000'000 };
-  overflow_counter<32> m_count{};
+  boost::leaf::result<uptime_t> driver_uptime() noexcept override
+  {
+    return uptime_t{ .frequency = m_cpu_frequency, .count = dwt()->cyccnt };
+  }
+
+  embed::frequency m_cpu_frequency{ 1'000'000 };
 };
 }  // namespace embed::cortex_m

@@ -9,7 +9,7 @@ boost::ut::suite systick_timer_test = []() {
 
   systick_timer test_subject(1_MHz);
 
-  should("systick_timer::driver_initialize()") = [&] {
+  should("systick_timer::systick_timer()") = [&] {
     // Setup
     // Exercise
     // Verify
@@ -33,7 +33,7 @@ boost::ut::suite systick_timer_test = []() {
     // Verify
   };
 
-  should("systick_timer::disable()") = [&] {
+  should("systick_timer::~systick_timer()") = [&] {
     // Setup
     // Exercise
     // Verify
