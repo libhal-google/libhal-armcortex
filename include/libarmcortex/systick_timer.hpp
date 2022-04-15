@@ -143,24 +143,35 @@ public:
   }
 
   /**
-   * @brief Determines if the timer has something scheduled.
+   * @brief Destroy the system timer object
    *
-   * @return boost::leaf::result<bool> - true if the timer has something
-   * scheduled and is running, false otherwise.
-   * @return boost::leaf::result<bool> - will never return an error
+   * Stop the timer and disable the interrupt service routine.
    */
+  ~systick_timer()
+  {
+    stop();
+    if (!cortex_m::interrupt(irq).disable()) {
+      std::abort();
+    }
+  }
+
+private:
+  void start()
+  {
+    xstd::bitmanip(sys_tick()->control).set(control_register::enable_counter);
+  }
+
+  void stop()
+  {
+    xstd::bitmanip(sys_tick()->control).reset(control_register::enable_counter);
+  }
+
   boost::leaf::result<bool> driver_is_running() noexcept override
   {
     return xstd::bitmanip(sys_tick()->control)
       .test(control_register::enable_counter);
   }
 
-  /**
-   * @brief Clear the currently scheduled event and prevent it from being
-   * executed.
-   *
-   * @return boost::leaf::result<void> - will never return an error
-   */
   boost::leaf::result<void> driver_clear() noexcept override
   {
     // All that is needed is to stop the timer. When the timer is started again
@@ -169,18 +180,6 @@ public:
     return {};
   }
 
-  /**
-   * @brief Schedule the timer to call the callback when the expiration delay
-   * time has elapsed.
-   *
-   * This function must not be called before the interrupt vector table has been
-   * initialized.
-   *
-   * @param p_callback - callback to be called when the timer expires.
-   * @param p_delay - the amount of time before the callback is called.
-   * @return boost::leaf::result<void> - can return `delay_too_small` and
-   * `delay_too_large`.
-   */
   boost::leaf::result<void> driver_schedule(
     std::function<void(void)> p_callback,
     std::chrono::nanoseconds p_delay) noexcept override
@@ -188,11 +187,13 @@ public:
     static constexpr std::int64_t minimum = 0x00000001;
     static constexpr std::int64_t maximum = 0x00FFFFFF;
 
-    auto cycle_count = m_frequency.cycles_per(p_delay);
+    auto cycle_count = BOOST_LEAF_CHECK(m_frequency.cycles_per(p_delay));
 
     if (minimum < cycle_count && cycle_count <= maximum) {
-      auto min_duration = m_frequency.duration_from_cycles(minimum);
-      auto max_duration = m_frequency.duration_from_cycles(maximum);
+      auto min_duration =
+        BOOST_LEAF_CHECK(m_frequency.duration_from_cycles(minimum));
+      auto max_duration =
+        BOOST_LEAF_CHECK(m_frequency.duration_from_cycles(maximum));
       return boost::leaf::new_error(out_of_bounds{
         .invalid = p_delay,
         .minimum = min_duration,
@@ -219,30 +220,6 @@ public:
     start();
 
     return {};
-  }
-
-  /**
-   * @brief Destroy the system timer object
-   *
-   * Stop the timer and disable the interrupt service routine.
-   */
-  ~systick_timer()
-  {
-    stop();
-    if (!cortex_m::interrupt(irq).disable()) {
-      std::abort();
-    }
-  }
-
-private:
-  void start()
-  {
-    xstd::bitmanip(sys_tick()->control).set(control_register::enable_counter);
-  }
-
-  void stop()
-  {
-    xstd::bitmanip(sys_tick()->control).reset(control_register::enable_counter);
   }
 
   frequency m_frequency = frequency(1'000'000);
