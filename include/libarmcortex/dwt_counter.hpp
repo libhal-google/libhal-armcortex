@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include <libembeddedhal/config.hpp>
-#include <libembeddedhal/counter/counter.hpp>
+#include <libembeddedhal/counter/interface.hpp>
 #include <libembeddedhal/overflow_counter.hpp>
 
 namespace embed::cortex_m {
@@ -145,7 +145,7 @@ public:
    *
    * Use this when the CPU's operating frequency has changed and no longer
    * matches the frequency supplied to the constructor. Care should be taken
-   * when execting this function when there is the potentially other parts of
+   * when expecting this function when there is the potentially other parts of
    * the system that depend on this counter's uptime to operate.
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
