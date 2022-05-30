@@ -32,6 +32,16 @@
         "calib",
         "TPIU",
         "xstd",
-        "bitmanip"
+        "bitmanip",
+        "bitrange",
+        "cpicnt",
+        "cyccnt",
+        "exccnt",
+        "foldcnt",
+        "Macrocell",
+        "sleepcnt",
+        "systick",
+        "tparam",
+        "Watchpoint"
     ]
 }

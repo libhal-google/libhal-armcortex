@@ -8,7 +8,7 @@
 #include <libembeddedhal/config.hpp>
 #include <libembeddedhal/frequency.hpp>
 #include <libembeddedhal/static_callable.hpp>
-#include <libembeddedhal/timer/timer.hpp>
+#include <libembeddedhal/timer/interface.hpp>
 #include <libxbitset/bitset.hpp>
 
 namespace embed::cortex_m {
@@ -107,7 +107,7 @@ public:
    *
    * Use this when the CPU's operating frequency has changed and no longer
    * matches the frequency supplied to the constructor. Care should be taken
-   * when execting this function when there is the potentially other parts of
+   * when expecting this function when there is the potentially other parts of
    * the system that depend on this counter's uptime to operate.
    *
    * This will clear any ongoing scheduled events as the timing will no longer
