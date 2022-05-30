@@ -1,6 +1,6 @@
 # libarmcortex
 
-[![.github/workflows/presubmit.yml](https://github.com/SJSU-Dev2/libarmcortex/actions/workflows/presubmit.yml/badge.svg)](https://github.com/SJSU-Dev2/libarmcortex/actions/workflows/presubmit.yml)
+[![.github/workflows/presubmit.yml](https://github.com/libembeddedhal/libarmcortex/actions/workflows/presubmit.yml/badge.svg?branch=main)](https://github.com/libembeddedhal/libarmcortex/actions/workflows/presubmit.yml)
 
 Drivers for ARM cortex-m series microcontrollers. Currently supports:
 
