@@ -8,14 +8,14 @@ on:
 
 jobs:
   lint:
-    uses: SJSU-Dev2/libembeddedhal/.github/workflows/lint.yml@main
+    uses: libembeddedhal/libembeddedhal/.github/workflows/lint.yml@main
     with:
       library: libarmcortex
   docs:
-    uses: SJSU-Dev2/libembeddedhal/.github/workflows/docs.yml@main
+    uses: libembeddedhal/libembeddedhal/.github/workflows/docs.yml@main
     with:
       library: libarmcortex
   # tests:
-  #   uses: SJSU-Dev2/libembeddedhal/.github/workflows/tests.yml@main
+  #   uses: libembeddedhal/libembeddedhal/.github/workflows/tests.yml@main
   #   with:
   #     library: libarmcortex
