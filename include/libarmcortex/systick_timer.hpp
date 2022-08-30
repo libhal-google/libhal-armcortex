@@ -5,13 +5,13 @@
 
 #include "interrupt.hpp"
 
-#include <libembeddedhal/config.hpp>
-#include <libembeddedhal/frequency.hpp>
-#include <libembeddedhal/static_callable.hpp>
-#include <libembeddedhal/timer/interface.hpp>
+#include <libhal/config.hpp>
+#include <libhal/frequency.hpp>
+#include <libhal/static_callable.hpp>
+#include <libhal/timer/interface.hpp>
 #include <libxbitset/bitset.hpp>
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 /**
  * @brief SysTick driver for the ARM Cortex Mx series chips.
  *
@@ -19,7 +19,7 @@ namespace embed::cortex_m {
  * simple timer for every platform using these processor.
  *
  */
-class systick_timer : public embed::timer
+class systick_timer : public hal::timer
 {
 public:
   /// @brief  Structure type to access the System Timer (SysTick).
@@ -81,7 +81,7 @@ public:
   /// @return auto* - Address of the ARM Cortex SysTick peripheral
   static auto* sys_tick()
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (hal::is_a_test()) {
       static registers dummy_sys_tick{};
       return &dummy_sys_tick;
     }
@@ -166,13 +166,13 @@ private:
     xstd::bitmanip(sys_tick()->control).reset(control_register::enable_counter);
   }
 
-  boost::leaf::result<bool> driver_is_running() noexcept override
+  result<bool> driver_is_running() noexcept override
   {
     return xstd::bitmanip(sys_tick()->control)
       .test(control_register::enable_counter);
   }
 
-  boost::leaf::result<void> driver_clear() noexcept override
+  status driver_clear() noexcept override
   {
     // All that is needed is to stop the timer. When the timer is started again
     // via `schedule()`, the timer value will be reloaded/reset.
@@ -180,21 +180,18 @@ private:
     return {};
   }
 
-  boost::leaf::result<void> driver_schedule(
-    std::function<void(void)> p_callback,
-    std::chrono::nanoseconds p_delay) noexcept override
+  status driver_schedule(std::function<void(void)> p_callback,
+                         std::chrono::nanoseconds p_delay) noexcept override
   {
     static constexpr std::int64_t minimum = 0x00000001;
     static constexpr std::int64_t maximum = 0x00FFFFFF;
 
-    auto cycle_count = BOOST_LEAF_CHECK(m_frequency.cycles_per(p_delay));
+    auto cycle_count = HAL_CHECK(m_frequency.cycles_per(p_delay));
 
     if (minimum < cycle_count && cycle_count <= maximum) {
-      auto min_duration =
-        BOOST_LEAF_CHECK(m_frequency.duration_from_cycles(minimum));
-      auto max_duration =
-        BOOST_LEAF_CHECK(m_frequency.duration_from_cycles(maximum));
-      return boost::leaf::new_error(out_of_bounds{
+      auto min_duration = HAL_CHECK(m_frequency.duration_from_cycles(minimum));
+      auto max_duration = HAL_CHECK(m_frequency.duration_from_cycles(maximum));
+      return hal::new_error(out_of_bounds{
         .invalid = p_delay,
         .minimum = min_duration,
         .maximum = max_duration,
@@ -211,7 +208,7 @@ private:
 
     // Enable interrupt service routine for SysTick and use this callback as the
     // handler
-    BOOST_LEAF_CHECK(cortex_m::interrupt(irq).enable(handler.get_handler()));
+    HAL_CHECK(cortex_m::interrupt(irq).enable(handler.get_handler()));
 
     // Set the time reload value
     sys_tick()->reload = static_cast<uint32_t>(cycle_count);
@@ -224,4 +221,4 @@ private:
 
   frequency m_frequency = frequency(1'000'000);
 };
-}  // namespace embed::cortex_m
+}  // namespace hal::cortex_m

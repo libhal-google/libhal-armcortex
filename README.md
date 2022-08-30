@@ -1,6 +1,6 @@
 # libarmcortex
 
-[![.github/workflows/presubmit.yml](https://github.com/libembeddedhal/libarmcortex/actions/workflows/presubmit.yml/badge.svg?branch=main)](https://github.com/libembeddedhal/libarmcortex/actions/workflows/presubmit.yml)
+[![.github/workflows/presubmit.yml](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml/badge.svg?branch=main)](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml)
 
 Drivers for ARM cortex-m series microcontrollers. Currently supports:
 
@@ -10,7 +10,7 @@ Drivers for ARM cortex-m series microcontrollers. Currently supports:
 
 ### Installing ARM toolchain
 
-libembeddedhal is platform and architecture agnostic but if you do plan to build
+libhal is platform and architecture agnostic but if you do plan to build
 application for ARM Cortex M class microcontrollers then you will want to follow
 these steps:
 

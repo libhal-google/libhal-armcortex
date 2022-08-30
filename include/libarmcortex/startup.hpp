@@ -4,7 +4,7 @@
 #include <cstring>
 
 // These need to be supplied by the linker script if the application developer
-// in order to call embed::cortex::initialize_data_section()
+// in order to call hal::cortex::initialize_data_section()
 extern "C"
 {
   /**
@@ -36,7 +36,7 @@ extern "C"
   extern uint32_t __bss_size;
 }
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 /**
  * @brief Initialize the data section of RAM. This should be the first thing
  * called in main() before using any global or statically allocated variables.
@@ -73,4 +73,4 @@ inline void initialize_bss_section()
   intptr_t bss_size = reinterpret_cast<intptr_t>(&__bss_size);
   memset(&__bss_start, 0, bss_size);
 }
-}  // namespace embed::cortex_m
+}  // namespace hal::cortex_m

@@ -1,7 +1,7 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/interrupt.hpp>
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 boost::ut::suite interrupt_test = [] {
   using namespace boost::ut;
 

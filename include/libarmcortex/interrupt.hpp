@@ -6,12 +6,12 @@
 #include <span>
 #include <utility>
 
-#include <libembeddedhal/config.hpp>
-#include <libembeddedhal/error.hpp>
+#include <libhal/config.hpp>
+#include <libhal/error.hpp>
 
 #include "system_control.hpp"
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 /// Used specifically for defining an interrupt vector table of addresses.
 using interrupt_pointer = void (*)();
 
@@ -62,7 +62,7 @@ public:
   /// @return auto* - Address of the Nested Vector Interrupt Controller register
   static auto* nvic()
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (hal::is_a_test()) {
       static nvic_register_t dummy_nvic{};
       return &dummy_nvic;
     }
@@ -87,7 +87,8 @@ public:
      */
     constexpr irq_t(int p_irq)
       : m_irq(p_irq)
-    {}
+    {
+    }
 
     /**
      * @brief copy constructor for irq_t
@@ -96,7 +97,8 @@ public:
      */
     constexpr irq_t(irq_t& p_irq)
       : m_irq(p_irq.m_irq)
-    {}
+    {
+    }
 
     /**
      * @brief operator overload for = int
@@ -302,7 +304,7 @@ public:
       clear_interrupt = 0xFFFF'FFFF;
     }
 
-    if (embed::is_a_test()) {
+    if (hal::is_a_test()) {
       for (auto& set_interrupt : nvic()->iser) {
         set_interrupt = 0x0000'0000;
       }
@@ -329,7 +331,8 @@ public:
    */
   explicit interrupt(irq_t p_irq)
     : m_irq(p_irq)
-  {}
+  {
+  }
 
   /**
    * @brief enable interrupt and set the service routine handler.
@@ -339,9 +342,9 @@ public:
    * @return true - successfully installed handler and enabled interrupt
    * @return false - irq value is outside of the bounds of the table
    */
-  [[nodiscard]] boost::leaf::result<void> enable(interrupt_pointer p_handler)
+  [[nodiscard]] status enable(interrupt_pointer p_handler)
   {
-    BOOST_LEAF_CHECK(sanity_check());
+    HAL_CHECK(sanity_check());
 
     vector_table[m_irq.vector_index()] = p_handler;
 
@@ -357,9 +360,9 @@ public:
    * @return true - successfully disabled interrupt
    * @return false - irq value is outside of the bounds of the table
    */
-  [[nodiscard]] boost::leaf::result<void> disable()
+  [[nodiscard]] status disable()
   {
-    BOOST_LEAF_CHECK(sanity_check());
+    HAL_CHECK(sanity_check());
 
     vector_table[m_irq.vector_index()] = nop;
 
@@ -379,10 +382,9 @@ public:
    * @return true - the handler is equal to the handler in the table
    * @return false -  the handler is not at this index in the table
    */
-  [[nodiscard]] boost::leaf::result<bool> verify_vector_enabled(
-    interrupt_pointer p_handler)
+  [[nodiscard]] result<bool> verify_vector_enabled(interrupt_pointer p_handler)
   {
-    BOOST_LEAF_CHECK(sanity_check());
+    HAL_CHECK(sanity_check());
 
     // Check if the handler match
     auto irq_handler = vector_table[m_irq.vector_index()];
@@ -401,14 +403,14 @@ public:
   }
 
 private:
-  boost::leaf::result<void> sanity_check()
+  status sanity_check()
   {
     if (!vector_table_is_initialized()) {
-      return boost::leaf::new_error(vector_table_not_initialized{});
+      return hal::new_error(vector_table_not_initialized{});
     }
 
     if (!m_irq.is_valid()) {
-      return boost::leaf::new_error(invalid_irq(m_irq));
+      return hal::new_error(invalid_irq(m_irq));
     }
 
     return {};
@@ -443,4 +445,4 @@ private:
 
   irq_t m_irq;
 };
-}  // namespace embed::cortex_m
+}  // namespace hal::cortex_m
