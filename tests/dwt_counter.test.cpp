@@ -1,13 +1,12 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/dwt_counter.hpp>
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 boost::ut::suite dwt_test = []() {
   using namespace boost::ut;
-  using namespace embed::cortex_m;
-  using namespace embed::literals;
+  using namespace hal::cortex_m;
 
-  constexpr auto operating_frequency = 1'000_MHz;
+  constexpr auto operating_frequency = 1'000.0_MHz;
   dwt_counter test_subject(operating_frequency);
 
   "dwt_counter::ctor()"_test = [&]() {
@@ -38,7 +37,7 @@ boost::ut::suite dwt_test = []() {
 
   "dwt_counter::register_cpu_frequency()"_test = [&]() {
     {
-      constexpr auto expected_frequency = 12_kHz;
+      constexpr auto expected_frequency = 12.0_kHz;
       cortex_m::dwt_counter::dwt()->cyccnt = 0;
       test_subject.register_cpu_frequency(expected_frequency);
       auto [frequency, count] = test_subject.uptime().value();
@@ -46,7 +45,7 @@ boost::ut::suite dwt_test = []() {
       expect(expected_frequency == frequency);
     }
     {
-      constexpr auto expected_frequency = 99_kHz;
+      constexpr auto expected_frequency = 99.0_kHz;
       cortex_m::dwt_counter::dwt()->cyccnt = 1337;
       test_subject.register_cpu_frequency(expected_frequency);
       auto [frequency, count] = test_subject.uptime().value();
@@ -54,7 +53,7 @@ boost::ut::suite dwt_test = []() {
       expect(expected_frequency == frequency);
     }
     {
-      constexpr auto expected_frequency = 154_kHz;
+      constexpr auto expected_frequency = 154.0_kHz;
       cortex_m::dwt_counter::dwt()->cyccnt = 65'000'192;
       test_subject.register_cpu_frequency(expected_frequency);
       auto [frequency, count] = test_subject.uptime().value();

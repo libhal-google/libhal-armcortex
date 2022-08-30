@@ -1,4 +1,4 @@
-# libembeddedhal Library Architecture
+# libhal Library Architecture
 
 ## Library Organization
 

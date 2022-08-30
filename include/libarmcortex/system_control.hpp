@@ -3,9 +3,9 @@
 #include <array>
 #include <cstdint>
 
-#include <libembeddedhal/config.hpp>
+#include <libhal/config.hpp>
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 /**
  * @brief Driver for controlling and inspect various aspects of the Cortex Mx
  * Systems such as interrupt vector table location, fault address locations and
@@ -68,7 +68,7 @@ public:
   /// @return auto* - Address of the Cortex M system control block register
   static auto* scb()
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (hal::is_a_test()) {
       static scb_registers_t dummy_scb{};
       return &dummy_scb;
     }
@@ -133,4 +133,4 @@ public:
     return reinterpret_cast<void*>(scb()->vtor);
   }
 };
-}  // namespace embed::cortex_m
+}  // namespace hal::cortex_m

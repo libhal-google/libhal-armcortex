@@ -3,18 +3,18 @@
 #include <array>
 #include <cstdint>
 
-#include <libembeddedhal/config.hpp>
-#include <libembeddedhal/counter/interface.hpp>
-#include <libembeddedhal/overflow_counter.hpp>
+#include <libhal/config.hpp>
+#include <libhal/counter/interface.hpp>
+#include <libhal/overflow_counter.hpp>
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 /**
  * @brief A counter with a frequency fixed to the CPU clock rate.
  *
  * This driver is supported for Cortex M3 devices and above.
  *
  */
-class dwt_counter : public embed::counter
+class dwt_counter : public hal::counter
 {
 public:
   /// Structure type to access the Data Watchpoint and Trace Register (DWT).
@@ -104,7 +104,7 @@ public:
   /// @return auto* - Address of the DWT peripheral
   static auto* dwt() noexcept
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (hal::is_a_test()) {
       static dwt_registers_t dummy_dwt{};
       return &dummy_dwt;
     }
@@ -114,7 +114,7 @@ public:
   /// @return auto* - Address of the Core Debug module
   static auto* core() noexcept
   {
-    if constexpr (embed::is_a_test()) {
+    if constexpr (hal::is_a_test()) {
       static core_debug_registers_t dummy_core{};
       return &dummy_core;
     }
@@ -126,7 +126,7 @@ public:
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  dwt_counter(embed::frequency p_cpu_frequency) noexcept
+  dwt_counter(hertz p_cpu_frequency) noexcept
     : m_cpu_frequency(p_cpu_frequency)
   {
     // Enable trace core
@@ -150,17 +150,17 @@ public:
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  void register_cpu_frequency(embed::frequency p_cpu_frequency) noexcept
+  void register_cpu_frequency(hertz p_cpu_frequency) noexcept
   {
     m_cpu_frequency = p_cpu_frequency;
   }
 
 private:
-  boost::leaf::result<uptime_t> driver_uptime() noexcept override
+  result<uptime_t> driver_uptime() noexcept override
   {
     return uptime_t{ .frequency = m_cpu_frequency, .count = dwt()->cyccnt };
   }
 
-  embed::frequency m_cpu_frequency{ 1'000'000 };
+  hertz m_cpu_frequency{ 1'000'000 };
 };
-}  // namespace embed::cortex_m
+}  // namespace hal::cortex_m

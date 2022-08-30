@@ -1,11 +1,11 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/systick_timer.hpp>
 
-namespace embed::cortex_m {
+namespace hal::cortex_m {
 boost::ut::suite systick_timer_test = []() {
   using namespace boost::ut;
   using namespace std::chrono_literals;
-  using namespace embed::literals;
+  using namespace hal::literals;
 
   systick_timer test_subject(1_MHz);
 
