@@ -40,16 +40,18 @@ archives/
 
 # Artifacts
 build/
-docs/doxygen/
+docs/api/
 docs/doxygen_warn.log
-docs/content/api/
-!docs/content/api/_index.md
-docs/public/
 tools/
-archive/
 
 # lint artifacts
 ncc.stderr
 
 # OS files
 .DS_Store
+
+# Conan Files
+graph_info.json
+conaninfo.txt
+conan.lock
+conanbuildinfo.txt
