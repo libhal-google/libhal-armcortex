@@ -1,4 +1,4 @@
-# libhal Library Architecture
+# libarmcortex Library Architecture
 
 ## Library Organization
 
