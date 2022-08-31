@@ -42,7 +42,7 @@ class LibArmCortexConan(ConanFile):
         }
 
     def requirements(self):
-        self.requires("libhal/0.0.0@")
+        self.requires("libhal/0.1.0@")
         self.requires("libxbitset/0.0.1@")
 
     def validate(self):
