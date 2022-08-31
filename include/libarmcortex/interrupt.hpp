@@ -132,7 +132,10 @@ public:
      * @return true - irq is enabled by default
      * @return false - irq must be enabled to work
      */
-    [[nodiscard]] constexpr bool default_enabled() const { return m_irq < 0; }
+    [[nodiscard]] constexpr bool default_enabled() const
+    {
+      return m_irq < 0;
+    }
 
     /**
      * @brief the enable bit for this interrupt resides within one of the 32-bit
@@ -180,7 +183,10 @@ public:
     /**
      * @return constexpr int - the interrupt request number
      */
-    [[nodiscard]] constexpr int get_irq_number() { return m_irq; }
+    [[nodiscard]] constexpr int get_irq_number()
+    {
+      return m_irq;
+    }
 
   private:
     int m_irq = 0;
@@ -234,7 +240,9 @@ public:
   };
 
   /// Place holder interrupt that performs no work
-  static void nop() {}
+  static void nop()
+  {
+  }
 
   /**
    * @brief Initializes the interrupt vector table.
@@ -322,7 +330,10 @@ public:
    *
    * @return const auto& - interrupt vector table
    */
-  static const auto& get_vector_table() { return vector_table; }
+  static const auto& get_vector_table()
+  {
+    return vector_table;
+  }
 
   /**
    * @brief Construct a new interrupt object

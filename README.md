@@ -1,3 +1,7 @@
+<p align="center">
+  <img height="150" src="logo.svg">
+</p>
+
 # libarmcortex
 
 [![.github/workflows/presubmit.yml](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml/badge.svg?branch=main)](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml)
