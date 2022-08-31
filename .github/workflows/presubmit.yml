@@ -1,3 +1,5 @@
+name: ✅ libhal Checks
+
 on:
   pull_request:
   push:

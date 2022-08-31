@@ -1,5 +1,6 @@
 #include <boost/ut.hpp>
 #include <libarmcortex/systick_timer.hpp>
+#include <libhal/units.hpp>
 
 namespace hal::cortex_m {
 boost::ut::suite systick_timer_test = []() {
@@ -7,7 +8,7 @@ boost::ut::suite systick_timer_test = []() {
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  systick_timer test_subject(1_MHz);
+  systick_timer test_subject(1.0_MHz);
 
   should("systick_timer::systick_timer()") = [&] {
     // Setup

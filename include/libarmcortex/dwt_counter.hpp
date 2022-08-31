@@ -4,8 +4,8 @@
 #include <cstdint>
 
 #include <libhal/config.hpp>
-#include <libhal/counter/interface.hpp>
 #include <libhal/overflow_counter.hpp>
+#include <libhal/steady_clock/interface.hpp>
 
 namespace hal::cortex_m {
 /**
@@ -14,7 +14,7 @@ namespace hal::cortex_m {
  * This driver is supported for Cortex M3 devices and above.
  *
  */
-class dwt_counter : public hal::counter
+class dwt_counter : public hal::steady_clock
 {
 public:
   /// Structure type to access the Data Watchpoint and Trace Register (DWT).
@@ -156,11 +156,17 @@ public:
   }
 
 private:
-  result<uptime_t> driver_uptime() noexcept override
+  result<std::uint64_t> driver_uptime() noexcept override
   {
-    return uptime_t{ .frequency = m_cpu_frequency, .count = dwt()->cyccnt };
+    return m_uptime.update(dwt()->cyccnt);
   }
 
+  hertz driver_frequency() noexcept override
+  {
+    return m_cpu_frequency;
+  }
+
+  overflow_counter<32> m_uptime{};
   hertz m_cpu_frequency{ 1'000'000 };
 };
 }  // namespace hal::cortex_m

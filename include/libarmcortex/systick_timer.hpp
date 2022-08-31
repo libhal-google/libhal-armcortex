@@ -6,7 +6,6 @@
 #include "interrupt.hpp"
 
 #include <libhal/config.hpp>
-#include <libhal/frequency.hpp>
 #include <libhal/static_callable.hpp>
 #include <libhal/timer/interface.hpp>
 #include <libxbitset/bitset.hpp>
@@ -94,7 +93,7 @@ public:
    * @param p_frequency - the clock source's frequency
    * @param p_source - the source of the clock to the systick timer
    */
-  systick_timer(frequency p_frequency,
+  systick_timer(hertz p_frequency,
                 clock_source p_source = clock_source::processor)
     : m_frequency(p_frequency)
   {
@@ -116,7 +115,7 @@ public:
    * @param p_frequency - the clock source's frequency
    * @param p_source - the source of the clock to the systick timer
    */
-  void register_cpu_frequency(frequency p_frequency,
+  void register_cpu_frequency(hertz p_frequency,
                               clock_source p_source = clock_source::processor)
   {
     stop();
@@ -172,28 +171,27 @@ private:
       .test(control_register::enable_counter);
   }
 
-  status driver_clear() noexcept override
+  status driver_cancel() noexcept override
   {
     // All that is needed is to stop the timer. When the timer is started again
     // via `schedule()`, the timer value will be reloaded/reset.
     stop();
-    return {};
+    return success();
   }
 
   status driver_schedule(std::function<void(void)> p_callback,
-                         std::chrono::nanoseconds p_delay) noexcept override
+                         hal::time_duration p_delay) noexcept override
   {
-    static constexpr std::int64_t minimum = 0x00000001;
     static constexpr std::int64_t maximum = 0x00FFFFFF;
 
-    auto cycle_count = HAL_CHECK(m_frequency.cycles_per(p_delay));
-
-    if (minimum < cycle_count && cycle_count <= maximum) {
-      auto min_duration = HAL_CHECK(m_frequency.duration_from_cycles(minimum));
-      auto max_duration = HAL_CHECK(m_frequency.duration_from_cycles(maximum));
+    auto cycle_count = cycles_per(m_frequency, p_delay);
+    if (cycle_count <= 1) {
+      cycle_count = 1;
+    } else if (cycle_count > maximum) {
+      auto tick_period = wavelength<std::nano>(m_frequency);
+      auto max_duration = HAL_CHECK(duration_from_cycles(m_frequency, maximum));
       return hal::new_error(out_of_bounds{
-        .invalid = p_delay,
-        .minimum = min_duration,
+        .tick_period = tick_period,
         .maximum = max_duration,
       });
     }
@@ -203,7 +201,7 @@ private:
 
     // Save the p_callback to the static_callable object's statically allocated
     // callback function. The lifetime of this object exists for the duration of
-    // the program, so there will never be a dangling reference.
+    // the program, so this will never become a dangling reference.
     auto handler = static_callable<systick_timer, 0, void(void)>(p_callback);
 
     // Enable interrupt service routine for SysTick and use this callback as the
@@ -216,9 +214,9 @@ private:
     // Starting the timer will restart the count
     start();
 
-    return {};
+    return success();
   }
 
-  frequency m_frequency = frequency(1'000'000);
+  hertz m_frequency = 1'000'000.0f;
 };
 }  // namespace hal::cortex_m

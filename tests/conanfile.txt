@@ -1,5 +1,7 @@
 [requires]
 boost-ext-ut/1.1.8
+libhal/0.1.0
+libxbitset/0.0.1
 
 [generators]
 CMakeToolchain
