@@ -1,4 +1,3 @@
-from conans import ConanFile, CMake, tools
 from conan import ConanFile
 from conan.tools.files import get, copy
 from conan.tools.layout import basic_layout
@@ -12,6 +11,7 @@ required_conan_version = ">=1.50.0"
 
 class LibArmCortexConan(ConanFile):
     name = "libarmcortex"
+    version = "0.1.0"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libarmcortex"
