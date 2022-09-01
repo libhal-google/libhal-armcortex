@@ -6,7 +6,9 @@
 
 [![.github/workflows/presubmit.yml](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml/badge.svg?branch=main)](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml)
 
-Drivers for ARM cortex-m series microcontrollers. Currently supports:
+# [📚 Software APIs](https://libhal.github.io/libarmcortex/api)
+
+Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
 * M3
 * M4
@@ -14,9 +16,10 @@ Drivers for ARM cortex-m series microcontrollers. Currently supports:
 
 ### Installing ARM toolchain
 
-libhal is platform and architecture agnostic but if you do plan to build
-application for ARM Cortex M class microcontrollers then you will want to follow
-these steps:
+Requires `arm-none-eabi-g++` version 11 and above.
+
+To build applications for ARM Cortex M class micro-controllers then you will want
+to follow these steps:
 
 - Ubuntu/Debian: `sudo apt install arm-none-eabi-gcc`
 - Mac: `brew install --cask gcc-arm-embedded`
@@ -24,3 +27,5 @@ these steps:
 - Or you can download the prebuilt binaries for your platform and manually
   add them to your systems PATH variable, if you do not, or cannot install
   it globally.
+
+To check the version run the command `arm-none-eabi-g++ --version`
