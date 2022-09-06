@@ -10,22 +10,30 @@
 
 Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
-* M3
-* M4
-* M7
+* Cortex-M3
+* Cortex-M4
+* Cortex-M7
 
-### Installing ARM toolchain
+# Installation
 
-Requires `arm-none-eabi-g++` version 11 and above.
+## Installing prerequistes
 
-To build applications for ARM Cortex M class micro-controllers then you will want
-to follow these steps:
+## Install from `libhal-trunk`
 
-- Ubuntu/Debian: `sudo apt install arm-none-eabi-gcc`
-- Mac: `brew install --cask gcc-arm-embedded`
-- Windows: Installer found here: [GNU Arm Embedded Toolchain Downloads](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
-- Or you can download the prebuilt binaries for your platform and manually
-  add them to your systems PATH variable, if you do not, or cannot install
-  it globally.
+`libhal-trunk` is a remote conan server with the latest version of the code.
 
-To check the version run the command `arm-none-eabi-g++ --version`
+Run the following to add `libhal-trunk` to your list of conan remote servers.
+
+NOTE: that the `--insert` argument places this server at the highest priority
+for conan, meaning updates will be checked at this server first before
+attempting to check out servers like the CCI.
+
+```bash
+conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan --insert
+```
+
+Now run this command to install libhal from that server.
+
+```bash
+conan install libhal
+```

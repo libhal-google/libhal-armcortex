@@ -1,5 +1,5 @@
 from conan import ConanFile
-from conan.tools.files import get, copy
+from conan.tools.files import copy
 from conan.tools.layout import basic_layout
 from conan.tools.build import check_min_cppstd
 from conan.errors import ConanInvalidConfiguration
@@ -20,7 +20,7 @@ class LibArmCortexConan(ConanFile):
     topics = ("ARM", "cortex", "cortex-m", "cortex-m0", "cortex-m0+",
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
-    settings = "os", "compiler", "arch", "build_type"
+    settings = "compiler"
     exports_sources = "include/*"
     no_copy_source = True
 
