@@ -1,0 +1,17 @@
+name: 🚀 deploy
+
+on:
+  workflow_call:
+    inputs:
+      library:
+        required: true
+        type: string
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy_trunk:
+    uses: libhal/libhal/.github/workflows/deploy.yml@main
+    with:
+      library: libarmcortex
