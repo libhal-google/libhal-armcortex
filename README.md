@@ -16,9 +16,11 @@ Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
 # Installation
 
-## Installing prerequistes
+## [Install libhal Prerequisites](https://github.com/libhal/libhal/blob/main/docs/prerequisites.md)
 
-## Install from `libhal-trunk`
+## [Install libarmcortex Prerequisites](https://github.com/libhal/libarmcortex/blob/main/docs/prerequisites.md)
+
+## Install `libarmcortex` from `libhal-trunk`
 
 `libhal-trunk` is a remote conan server with the latest version of the code.
 
