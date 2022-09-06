@@ -16,3 +16,4 @@ jobs:
     uses: libhal/libhal/.github/workflows/deploy.yml@main
     with:
       library: libarmcortex
+    secrets: inherit
