@@ -14,11 +14,14 @@ jobs:
     uses: libhal/libhal/.github/workflows/lint.yml@main
     with:
       library: libarmcortex
+    secrets: inherit
   docs:
     uses: libhal/libhal/.github/workflows/docs.yml@main
     with:
       library: libarmcortex
+    secrets: inherit
   tests:
     uses: libhal/libhal/.github/workflows/tests.yml@main
     with:
       library: libarmcortex
+    secrets: inherit
