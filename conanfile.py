@@ -42,8 +42,8 @@ class LibArmCortexConan(ConanFile):
         }
 
     def requirements(self):
-        self.requires("libhal/0.0.1@")
-        self.requires("libxbitset/0.0.1@")
+        self.requires("libhal/[x]@")
+        self.requires("libxbitset/[x]@")
 
     def validate(self):
         if self.settings.get_safe("compiler.cppstd"):
