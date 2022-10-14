@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <libhal/config.hpp>
+#include <libhal/error.hpp>
 
 namespace hal::cortex_m {
 /**
@@ -79,7 +80,7 @@ public:
    * above processor.
    *
    */
-  void initialize_floating_point_unit()
+  static void initialize_floating_point_unit()
   {
     scb()->cpacr = scb()->cpacr | ((0b11 << 10 * 2) | /* set CP10 Full Access */
                                    (0b11 << 11 * 2)); /* set CP11 Full Access */
@@ -112,7 +113,7 @@ public:
    *
    * @param p_table_location - address of the interrupt vector table.
    */
-  void set_interrupt_vector_table_address(void* p_table_location)
+  static void set_interrupt_vector_table_address(void* p_table_location)
   {
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
@@ -126,11 +127,26 @@ public:
    * @return void* - address within VTOR the interrupt vector table relocation
    * register.
    */
-  void* get_interrupt_vector_table_address()
+  static void* get_interrupt_vector_table_address()
   {
     // Relocate the interrupt vector table the vector buffer. By default this
     // will be set to the address of the start of flash memory for the MCU.
     return reinterpret_cast<void*>(scb()->vtor);
+  }
+
+  /**
+   * @brief Request reset from CPU
+   *
+   */
+  static void reset()
+  {
+    // Value "0x5FA" must be written to the VECTKEY field [31:16] to confirm
+    // that this action is valid, otherwise the processor ignores the write
+    // command.
+    // Bit 2 is the SYSRESETREQ bit.
+    scb()->aircr = (0x5FA << 16) | (1 << 2);
+    // System reset is asynchronous, so the code needs to wait.
+    hal::halt();
   }
 };
 }  // namespace hal::cortex_m

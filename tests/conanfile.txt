@@ -1,7 +1,7 @@
 [requires]
 boost-ext-ut/1.1.8
-libhal/[x]
-libxbitset/[x]
+libhal/[>=0.1.6]
+libxbitset/[>=0.0.0]
 
 [generators]
 CMakeToolchain
