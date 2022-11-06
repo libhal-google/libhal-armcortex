@@ -1,30 +1,28 @@
 # How to install prerequisites for libarmcortex
 
-NOTE: that these prerequisites aren't the only way one can use and install
-the set of tools for libarmcortex, but these are the recommended way of doing
-it.
+NOTE: These install steps are not the only possible way to install these
+binaries, just that these are very easy ways to install these prereqs.
 
-## Prerequisites
+- ARM cross compiler: `arm-none-eabi-g++` version 11.0 or above
 
-- `arm-none-eabi-g++`: 11.0 or above (ARM cross compiler)
-
-## Installing `arm-none-eabi-g++` Recommended way
-
-libarmcortex is meant to be compiled on a host machine for unit test or
-to be compiled using the GCC C++ bare metal ARM compiler to build code.
-
-To install the bare metal ARM compile follow these steps:
-
-### Ubuntu/Debian
-
-```bash
-sudo apt install arm-none-eabi-gcc
-```
+## Installing ARM cross compiler:
 
 ### Mac
 
 ```
 brew install --cask gcc-arm-embedded
+```
+
+### Linux (untested)
+
+Use xPack to make installation consistent for your platform, requires Node.js
+and NPM:
+
+```
+npm install xpm
+xpm install --global @xpack-dev-tools/arm-none-eabi-gcc@latest --verbose
+echo "export PATH=\"$PATH:~/.local/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/11.3.1-1.1.2/.content/bin/\"" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### Windows
@@ -41,15 +39,7 @@ check the box.
 This executable along with others others can be found here:
 https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads.
 
-### Installing by other means `arm-none-eabi-g++`
-
-You can download the prebuilt binaries for your platform and manually add
-them to your systems PATH variable, if you do not, or cannot install it
-globally by downloading the `.tar.gz` or `.zip` files from:
-
-https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
-
-### Verifying Installation
+## Verifying Installation
 
 To check the version run the command `arm-none-eabi-g++ --version`. It should
 look like this:
