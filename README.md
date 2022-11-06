@@ -20,22 +20,15 @@ Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
 ## [Install libarmcortex Prerequisites](https://github.com/libhal/libarmcortex/blob/main/docs/prerequisites.md)
 
-## Install `libarmcortex` from `libhal-trunk`
+## Using libhal-trunk (RECOMMENDED)
 
-`libhal-trunk` is a remote conan server with the latest version of the code.
+The "trunk" repository represents the latest packaged code based on github.
 
-Run the following to add `libhal-trunk` to your list of conan remote servers.
-
-NOTE: that the `--insert` argument places this server at the highest priority
-for conan, meaning updates will be checked at this server first before
-attempting to check out servers like the CCI.
+This command will insert `libhal-trunk` as the first server to check before
+checking the conan center index. The second command will enable revision mode
+which is required to use `libhal-trunk` in projects.
 
 ```bash
 conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan --insert
-```
-
-Now run this command to install libhal from that server.
-
-```bash
-conan install libhal
+conan config set general.revisions_enabled=True
 ```
