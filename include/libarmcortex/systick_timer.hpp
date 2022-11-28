@@ -5,10 +5,10 @@
 
 #include "interrupt.hpp"
 
+#include <libhal/bit.hpp>
 #include <libhal/config.hpp>
 #include <libhal/static_callable.hpp>
 #include <libhal/timer/interface.hpp>
-#include <libxbitset/bitset.hpp>
 
 namespace hal::cortex_m {
 /**
@@ -44,19 +44,19 @@ public:
     /// the current_value register and begins counting down to zero. Setting
     /// this to zero stops the counter. Restarting the counter will restart the
     /// count.
-    static constexpr auto enable_counter = xstd::bitrange::from<0>();
+    static constexpr auto enable_counter = hal::bit::mask::from<0>();
 
     /// When SysTick timer's count goes from 1 to 0, if this bit is set, the
     /// SysTick interrupt will fire.
-    static constexpr auto enable_interrupt = xstd::bitrange::from<1>();
+    static constexpr auto enable_interrupt = hal::bit::mask::from<1>();
 
     /// If set to 0, clock source is external, if set to 1, clock source follows
     /// the processor clock.
-    static constexpr auto clock_source = xstd::bitrange::from<2>();
+    static constexpr auto clock_source = hal::bit::mask::from<2>();
 
     /// Set to 1 when count falls from 1 to 0. This bit is cleared on the next
     /// read of this register.
-    static constexpr auto count_flag = xstd::bitrange::from<16>();
+    static constexpr auto count_flag = hal::bit::mask::from<16>();
   };
 
   /**
@@ -73,9 +73,9 @@ public:
   };
 
   /// The address of the sys_tick register
-  static constexpr intptr_t address = 0xE000'E010UL;
+  static constexpr std::intptr_t address = 0xE000'E010UL;
   /// The IRQ number for the SysTick interrupt vector
-  static constexpr int irq = -1;
+  static constexpr std::uint16_t event_number = 15;
 
   /// @return auto* - Address of the ARM Cortex SysTick peripheral
   static auto* sys_tick()
@@ -126,17 +126,17 @@ public:
     // reloading of the register and will stop the timer.
     sys_tick()->current_value = 0;
 
-    auto control = xstd::bitmanip(sys_tick()->control);
-    control.set(control_register::enable_interrupt);
+    auto control = hal::bit::modify(sys_tick()->control);
+    control.set<control_register::enable_interrupt>();
 
     if (p_source == clock_source::processor) {
-      control.set(control_register::clock_source);
+      control.set<control_register::clock_source>();
     } else {
-      control.reset(control_register::clock_source);
+      control.clear<control_register::clock_source>();
     }
 
     // Disable the counter if it was previously enabled.
-    control.reset(control_register::enable_counter);
+    control.clear<control_register::enable_counter>();
 
     // control will be committed to "sys_tick()->control" on destruction
   }
@@ -149,7 +149,7 @@ public:
   ~systick_timer()
   {
     stop();
-    if (!cortex_m::interrupt(irq).disable()) {
+    if (!cortex_m::interrupt(event_number).disable()) {
       std::abort();
     }
   }
@@ -157,18 +157,20 @@ public:
 private:
   void start()
   {
-    xstd::bitmanip(sys_tick()->control).set(control_register::enable_counter);
+    hal::bit::modify(sys_tick()->control)
+      .set<control_register::enable_counter>();
   }
 
   void stop()
   {
-    xstd::bitmanip(sys_tick()->control).reset(control_register::enable_counter);
+    hal::bit::modify(sys_tick()->control)
+      .clear<control_register::enable_counter>();
   }
 
   result<bool> driver_is_running() noexcept override
   {
-    return xstd::bitmanip(sys_tick()->control)
-      .test(control_register::enable_counter);
+    return hal::bit::extract<control_register::enable_counter>(
+      sys_tick()->control);
   }
 
   status driver_cancel() noexcept override
@@ -206,7 +208,7 @@ private:
 
     // Enable interrupt service routine for SysTick and use this callback as the
     // handler
-    HAL_CHECK(cortex_m::interrupt(irq).enable(handler.get_handler()));
+    HAL_CHECK(cortex_m::interrupt(event_number).enable(handler.get_handler()));
 
     // Set the time reload value
     sys_tick()->reload = static_cast<uint32_t>(cycle_count);

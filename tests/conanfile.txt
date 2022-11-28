@@ -1,7 +1,6 @@
 [requires]
-boost-ext-ut/1.1.8
-libhal/[>=0.1.6]
-libxbitset/[>=0.0.0]
+boost-ext-ut/1.1.9
+libhal/[x]
 
 [generators]
 CMakeToolchain
