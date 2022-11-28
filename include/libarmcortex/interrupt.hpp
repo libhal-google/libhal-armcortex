@@ -57,7 +57,7 @@ public:
   static constexpr intptr_t nvic_address = 0xE000'E100UL;
 
   /// The core interrupts that all cortex m3, m4, m7 processors have
-  static constexpr int core_interrupts = 16;
+  static constexpr size_t core_interrupts = 16;
 
   /// @return auto* - Address of the Nested Vector Interrupt Controller register
   static auto* nvic()
@@ -77,40 +77,21 @@ public:
    * for setting up the interrupt controller registers.
    *
    */
-  class irq_t
+  class exception_number
   {
   public:
     /**
-     * @brief construct an irq_t from an int
+     * @brief construct an exception_number from an int
      *
-     * @param p_irq - interrupt request number
+     * @param p_id - interrupt request number
      */
-    constexpr irq_t(int p_irq)
-      : m_irq(p_irq)
+    constexpr exception_number(std::uint16_t p_id)
+      : m_id(p_id)
     {
     }
 
-    /**
-     * @brief copy constructor for irq_t
-     *
-     * @param p_irq - irq_t object to copy
-     */
-    constexpr irq_t(irq_t& p_irq)
-      : m_irq(p_irq.m_irq)
-    {
-    }
-
-    /**
-     * @brief operator overload for = int
-     *
-     * @param p_irq - new irq value to change this irq into
-     * @return constexpr irq_t& - reference to this object
-     */
-    constexpr irq_t& operator=(int p_irq)
-    {
-      m_irq = p_irq;
-      return *this;
-    }
+    constexpr exception_number(exception_number& p_id) = default;
+    constexpr exception_number& operator=(exception_number& p_id) = default;
 
     /**
      * @brief Bits 5 and above represent which 32-bit word in the iser and icer
@@ -134,7 +115,12 @@ public:
      */
     [[nodiscard]] constexpr bool default_enabled() const
     {
-      return m_irq < 0;
+      return m_id < core_interrupts;
+    }
+
+    [[nodiscard]] constexpr std::uint32_t to_irq_number() const
+    {
+      return static_cast<std::uint32_t>(m_id - core_interrupts);
     }
 
     /**
@@ -142,21 +128,24 @@ public:
      * registers within the "iser" and "icer" arrays. This function will return
      * the index of which 32-bit register contains the enable bit.
      *
-     * @return constexpr int - array index
+     * @return constexpr std::uint32_t - array index
      */
-    [[nodiscard]] constexpr int register_index() const
+    [[nodiscard]] constexpr std::uint32_t register_index() const
     {
-      return m_irq >> index_position;
+      return to_irq_number() >> index_position;
     }
+
     /**
-     * @brief return a mask with a 1 bit in the enable position for this irq_t.
+     * @brief return a mask with a 1 bit in the enable position for this
+     * exception_number.
      *
-     * @return constexpr uint32_t - enable mask
+     * @return constexpr std::uint32_t - enable mask
      */
-    [[nodiscard]] constexpr uint32_t enable_mask() const
+    [[nodiscard]] constexpr std::uint32_t enable_mask() const
     {
-      return 1U << (m_irq & enable_mask_code);
+      return 1U << (to_irq_number() & enable_mask_code);
     }
+
     /**
      * @brief
      *
@@ -164,8 +153,9 @@ public:
      */
     [[nodiscard]] constexpr size_t vector_index() const
     {
-      return m_irq + core_interrupts;
+      return m_id;
     }
+
     /**
      * @brief determines if the irq is within bounds of the interrupt vector
      * table.
@@ -175,21 +165,18 @@ public:
      */
     [[nodiscard]] constexpr bool is_valid() const
     {
-      int table_size = static_cast<int>(vector_table.size());
-      const int last_irq = table_size - core_interrupts;
-      return std::cmp_greater(m_irq, -core_interrupts) &&
-             std::cmp_less(m_irq, last_irq);
+      return m_id < vector_table.size();
     }
     /**
-     * @return constexpr int - the interrupt request number
+     * @return constexpr std::uint16_t - the interrupt request number
      */
-    [[nodiscard]] constexpr int get_irq_number()
+    [[nodiscard]] constexpr std::uint16_t get_event_number()
     {
-      return m_irq;
+      return m_id;
     }
 
   private:
-    int m_irq = 0;
+    std::uint16_t m_id = 0;
   };
 
   /**
@@ -217,26 +204,23 @@ public:
   struct invalid_irq
   {
     /// Beginning IRQ (always -16)
-    static constexpr int begin = -core_interrupts;
+    static constexpr size_t begin = -core_interrupts;
 
     /**
      * @brief Construct a new invalid irq object
      *
-     * @param p_irq - the offending IRQ number
+     * @param p_id - the offending IRQ number
      */
-    invalid_irq(irq_t p_irq)
-      : invalid{}
-      , end{}
+    invalid_irq(exception_number p_id)
+      : invalid{ p_id.get_event_number() }
+      , end{ vector_table.size() }
     {
-      invalid = p_irq.get_irq_number();
-      int table_size = static_cast<int>(vector_table.size());
-      end = table_size - core_interrupts;
     }
 
     /// Offending IRQ number
-    int invalid{};
+    size_t invalid{};
     /// The last IRQ in the table
-    int end{};
+    size_t end{};
   };
 
   /// Place holder interrupt that performs no work
@@ -338,10 +322,10 @@ public:
   /**
    * @brief Construct a new interrupt object
    *
-   * @param p_irq - interrupt to configure
+   * @param p_id - interrupt to configure
    */
-  explicit interrupt(irq_t p_irq)
-    : m_irq(p_irq)
+  explicit interrupt(exception_number p_id)
+    : m_id(p_id)
   {
   }
 
@@ -357,9 +341,9 @@ public:
   {
     HAL_CHECK(sanity_check());
 
-    vector_table[m_irq.vector_index()] = p_handler;
+    vector_table[m_id.vector_index()] = p_handler;
 
-    if (!m_irq.default_enabled()) {
+    if (!m_id.default_enabled()) {
       nvic_enable_irq();
     }
     return {};
@@ -375,9 +359,9 @@ public:
   {
     HAL_CHECK(sanity_check());
 
-    vector_table[m_irq.vector_index()] = nop;
+    vector_table[m_id.vector_index()] = nop;
 
-    if (!m_irq.default_enabled()) {
+    if (!m_id.default_enabled()) {
       nvic_disable_irq();
     }
     return {};
@@ -398,19 +382,19 @@ public:
     HAL_CHECK(sanity_check());
 
     // Check if the handler match
-    auto irq_handler = vector_table[m_irq.vector_index()];
+    auto irq_handler = vector_table[m_id.vector_index()];
     bool handlers_are_the_same = (irq_handler == p_handler);
 
     if (!handlers_are_the_same) {
       return false;
     }
 
-    if (m_irq.default_enabled()) {
+    if (m_id.default_enabled()) {
       return true;
     }
 
-    uint32_t enable_register = nvic()->iser.at(m_irq.register_index());
-    return (enable_register & m_irq.enable_mask()) == 0U;
+    uint32_t enable_register = nvic()->iser.at(m_id.register_index());
+    return (enable_register & m_id.enable_mask()) == 0U;
   }
 
 private:
@@ -420,8 +404,8 @@ private:
       return hal::new_error(vector_table_not_initialized{});
     }
 
-    if (!m_irq.is_valid()) {
-      return hal::new_error(invalid_irq(m_irq));
+    if (!m_id.is_valid()) {
+      return hal::new_error(invalid_irq(m_id));
     }
 
     return {};
@@ -439,8 +423,8 @@ private:
    */
   void nvic_enable_irq()
   {
-    auto* interrupt_enable = &nvic()->iser.at(m_irq.register_index());
-    *interrupt_enable = m_irq.enable_mask();
+    auto* interrupt_enable = &nvic()->iser.at(m_id.register_index());
+    *interrupt_enable = m_id.enable_mask();
   }
 
   /**
@@ -450,10 +434,10 @@ private:
    */
   void nvic_disable_irq()
   {
-    auto* interrupt_clear = &nvic()->icer.at(m_irq.register_index());
-    *interrupt_clear = m_irq.enable_mask();
+    auto* interrupt_clear = &nvic()->icer.at(m_id.register_index());
+    *interrupt_clear = m_id.enable_mask();
   }
 
-  irq_t m_irq;
+  exception_number m_id;
 };
 }  // namespace hal::cortex_m

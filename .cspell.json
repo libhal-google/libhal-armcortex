@@ -31,7 +31,6 @@
         "iabr",
         "calib",
         "TPIU",
-        "xstd",
         "bitmanip",
         "bitrange",
         "cpicnt",

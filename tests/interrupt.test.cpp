@@ -29,58 +29,62 @@ boost::ut::suite interrupt_test = [] {
   should("interrupt::enable()") = [&] {
     interrupt_pointer dummy_handler = []() {};
 
-    should("interrupt::enable(5)") = [&]() {
+    should("interrupt::enable(21)") = [&]() {
       // Setup
-      static constexpr int expected_irq = 5;
-      unsigned index = expected_irq >> 5;
-      unsigned bit_position = expected_irq & 0x1F;
+      static constexpr std::uint16_t expected_event_number = 21;
+      static constexpr std::uint16_t shifted_event_number =
+        (expected_event_number - interrupt::core_interrupts);
+      unsigned index = shifted_event_number >> 5;
+      unsigned bit_position = shifted_event_number & 0x1F;
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_irq).enable(dummy_handler));
+      bool success = static_cast<bool>(
+        interrupt(expected_event_number).enable(dummy_handler));
 
       // Verify
       expect(that % success);
-      expect(
-        dummy_handler ==
-        interrupt::vector_table[interrupt::core_interrupts + expected_irq]);
-
-      expect((1U << bit_position) & interrupt::nvic()->iser.at(index));
+      expect(that % dummy_handler ==
+             interrupt::vector_table[expected_event_number]);
+      std::uint32_t iser =
+        (1U << bit_position) & interrupt::nvic()->iser.at(index);
+      expect(that % (1 << shifted_event_number) == iser);
     };
 
     should("interrupt::enable(17)") = [&]() {
       // Setup
-      static constexpr int expected_irq = 17;
-      unsigned index = expected_irq >> 5;
-      unsigned bit_position = expected_irq & 0x1F;
+      static constexpr std::uint16_t expected_event_number = 17;
+      static constexpr std::uint16_t shifted_event_number =
+        (expected_event_number - interrupt::core_interrupts);
+      unsigned index = shifted_event_number >> 5;
+      unsigned bit_position = shifted_event_number & 0x1F;
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_irq).enable(dummy_handler));
+      bool success = static_cast<bool>(
+        interrupt(expected_event_number).enable(dummy_handler));
 
       // Verify
       expect(that % success);
-      expect(
-        dummy_handler ==
-        interrupt::vector_table[interrupt::core_interrupts + expected_irq]);
-      expect((1U << bit_position) & interrupt::nvic()->iser.at(index));
+      expect(that % dummy_handler ==
+             interrupt::vector_table[expected_event_number]);
+      std::uint32_t iser =
+        (1U << bit_position) & interrupt::nvic()->iser.at(index);
+      expect(that % (1 << shifted_event_number) == iser);
     };
 
-    should("interrupt::enable(-5)") = [&]() {
+    should("interrupt::enable(5)") = [&]() {
       // Setup
-      static constexpr int expected_irq = -5;
+      static constexpr std::uint16_t expected_event_number = 5;
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_irq).enable(dummy_handler));
+      bool success = static_cast<bool>(
+        interrupt(expected_event_number).enable(dummy_handler));
 
       // Verify
       expect(that % success);
       // Verify: That the dummy handler was added to the IVT (ISER)
-      expect(
-        dummy_handler ==
-        interrupt::vector_table[interrupt::core_interrupts + expected_irq]);
+      expect(that % dummy_handler ==
+             interrupt::vector_table[expected_event_number]);
       // Verify: ISER[] should not have changed when enable() succeeds but the
       // IRQ is less than 0.
       for (size_t i = 0; i < old_nvic.iser.size(); i++) {
@@ -88,23 +92,23 @@ boost::ut::suite interrupt_test = [] {
       }
     };
 
-    should("interrupt::enable(-20) fail") = [&]() {
+    should("interrupt::enable(100) fail") = [&]() {
       // Setup
       // Setup: Re-initialize interrupts which will set each vector to "nop"
       interrupt::reinitialize<expected_interrupt_count>();
-      static constexpr int expected_irq = -20;
+      static constexpr std::uint16_t expected_event_number = 100;
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_irq).enable(dummy_handler));
+      bool success = static_cast<bool>(
+        interrupt(expected_event_number).enable(dummy_handler));
 
       // Verify
       expect(that % !success);
 
       // Verify: Nothing in the interrupt vector table should have changed
       for (const auto& interrupt_function : interrupt::vector_table) {
-        expect(interrupt::nop == interrupt_function);
+        expect(that % &interrupt::nop == interrupt_function);
       }
 
       // Verify: ISER[] should not have changed when enable() fails.
@@ -114,56 +118,67 @@ boost::ut::suite interrupt_test = [] {
     };
   };
 
-  should("interrupt(expected_irq).disable()") = [&] {
-    should("interrupt(expected_irq).disable(5)") = [&]() {
+  should("interrupt(expected_event_number).disable()") = [&] {
+    should("interrupt(expected_event_number).disable(21)") = [&]() {
       // Setup
-      static constexpr int expected_irq = 5;
-      unsigned index = static_cast<uint32_t>(expected_irq) >> 5;
-      unsigned bit_position = static_cast<uint32_t>(expected_irq) & 0x1F;
+      static constexpr std::uint16_t expected_event_number = 21;
+      static constexpr std::uint16_t shifted_event_number =
+        (expected_event_number - interrupt::core_interrupts);
+      unsigned index = static_cast<uint32_t>(shifted_event_number) >> 5;
+      unsigned bit_position =
+        static_cast<uint32_t>(shifted_event_number) & 0x1F;
 
       // Exercise
-      bool success = static_cast<bool>(interrupt(expected_irq).disable());
+      bool success =
+        static_cast<bool>(interrupt(expected_event_number).disable());
 
       // Verify
       expect(that % success);
-      expect(
-        interrupt::nop ==
-        interrupt::vector_table[interrupt::core_interrupts + expected_irq]);
+      expect(that % &interrupt::nop ==
+             interrupt::vector_table[expected_event_number]);
 
-      expect((1U << bit_position) & interrupt::nvic()->icer.at(index));
+      std::uint32_t icer =
+        (1U << bit_position) & interrupt::nvic()->icer.at(index);
+      expect(that % (1 << shifted_event_number) == icer);
     };
 
-    should("interrupt(expected_irq).disable(17)") = [&]() {
+    should("interrupt(expected_event_number).disable(17)") = [&]() {
       // Setup
-      static constexpr int expected_irq = 17;
-      unsigned index = static_cast<uint32_t>(expected_irq) >> 5;
-      unsigned bit_position = static_cast<uint32_t>(expected_irq) & 0x1F;
+      static constexpr int expected_event_number = 17;
+      static constexpr std::uint16_t shifted_event_number =
+        (expected_event_number - interrupt::core_interrupts);
+      unsigned index = static_cast<uint32_t>(shifted_event_number) >> 5;
+      unsigned bit_position =
+        static_cast<uint32_t>(shifted_event_number) & 0x1F;
 
       // Exercise
-      bool success = static_cast<bool>(interrupt(expected_irq).disable());
+      bool success =
+        static_cast<bool>(interrupt(expected_event_number).disable());
 
       // Verify
       expect(that % success);
-      expect(
-        interrupt::nop ==
-        interrupt::vector_table[interrupt::core_interrupts + expected_irq]);
-      expect((1U << bit_position) & interrupt::nvic()->icer.at(index));
+      expect(that % &interrupt::nop ==
+             interrupt::vector_table[expected_event_number]);
+
+      std::uint32_t icer =
+        (1U << bit_position) & interrupt::nvic()->icer.at(index);
+      expect(that % (1 << shifted_event_number) == icer);
     };
 
-    should("interrupt(expected_irq).disable(-5)") = [&]() {
+    should("interrupt(expected_event_number).disable(5)") = [&]() {
       // Setup
-      static constexpr int expected_irq = -5;
+      static constexpr std::uint16_t expected_event_number = 5;
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success = static_cast<bool>(interrupt(expected_irq).disable());
+      bool success =
+        static_cast<bool>(interrupt(expected_event_number).disable());
 
       // Verify
       expect(that % success);
       // Verify: That the dummy handler was added to the IVT (icer )
-      expect(
-        interrupt::nop ==
-        interrupt::vector_table[interrupt::core_interrupts + expected_irq]);
+      expect(that % &interrupt::nop ==
+             interrupt::vector_table[expected_event_number]);
       // Verify: icer[] should not have changed when disable() succeeds but the
       // IRQ is less than 0.
       for (size_t i = 0; i < old_nvic.icer.size(); i++) {
@@ -171,22 +186,23 @@ boost::ut::suite interrupt_test = [] {
       }
     };
 
-    should("interrupt(expected_irq).disable(-20) fail") = [&]() {
+    should("interrupt(expected_event_number).disable(100) fail") = [&]() {
       // Setup
       // Setup: Re-initialize interrupts which will set each vector to "nop"
       interrupt::reinitialize<expected_interrupt_count>();
-      static constexpr int expected_irq = -20;
+      static constexpr int expected_event_number = 100;
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success = static_cast<bool>(interrupt(expected_irq).disable());
+      bool success =
+        static_cast<bool>(interrupt(expected_event_number).disable());
 
       // Verify
       expect(that % !success);
 
       // Verify: Nothing in the interrupt vector table should have changed
       for (const auto& interrupt_function : interrupt::vector_table) {
-        expect(interrupt::nop == interrupt_function);
+        expect(that % &interrupt::nop == interrupt_function);
       }
 
       // Verify: icer[] should not have changed when disable() fails.
