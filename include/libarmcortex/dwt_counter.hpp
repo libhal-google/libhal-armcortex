@@ -3,9 +3,9 @@
 #include <array>
 #include <cstdint>
 
+#include <libhal-util/overflow_counter.hpp>
 #include <libhal/config.hpp>
-#include <libhal/overflow_counter.hpp>
-#include <libhal/steady_clock/interface.hpp>
+#include <libhal/steady_clock.hpp>
 
 namespace hal::cortex_m {
 /**

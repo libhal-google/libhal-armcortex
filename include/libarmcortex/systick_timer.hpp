@@ -3,12 +3,13 @@
 #include <cstdint>
 #include <functional>
 
-#include "interrupt.hpp"
-
-#include <libhal/bit.hpp>
+#include <libhal-util/bit.hpp>
+#include <libhal-util/static_callable.hpp>
+#include <libhal-util/units.hpp>
 #include <libhal/config.hpp>
-#include <libhal/static_callable.hpp>
-#include <libhal/timer/interface.hpp>
+#include <libhal/timer.hpp>
+
+#include "interrupt.hpp"
 
 namespace hal::cortex_m {
 /**
