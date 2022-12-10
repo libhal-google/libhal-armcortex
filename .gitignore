@@ -43,6 +43,7 @@ build/
 docs/api/
 docs/doxygen_warn.log
 tools/
+CMakeUserPresets.json
 
 # lint artifacts
 ncc.stderr
