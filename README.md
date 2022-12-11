@@ -14,21 +14,8 @@ Drivers for ARM cortex-m series micro-controllers. Currently supports:
 * Cortex-M4
 * Cortex-M7
 
-# Installation
+# Setup
 
-## [Install libhal Prerequisites](https://github.com/libhal/libhal/blob/main/docs/prerequisites.md)
+## [Setup Conan](https://github.com/libhal/.github/blob/main/docs/conan-setup.md)
 
-## [Install libarmcortex Prerequisites](https://github.com/libhal/libarmcortex/blob/main/docs/prerequisites.md)
-
-## Using libhal-trunk (RECOMMENDED)
-
-The "trunk" repository represents the latest packaged code based on github.
-
-This command will insert `libhal-trunk` as the first server to check before
-checking the conan center index. The second command will enable revision mode
-which is required to use `libhal-trunk` in projects.
-
-```bash
-conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan --insert
-conan config set general.revisions_enabled=True
-```
+## [Install Prerequisites](https://github.com/libhal/libarmcortex/blob/main/docs/prerequisites.md)
