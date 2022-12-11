@@ -5,7 +5,7 @@ binaries, just that these are very easy ways to install these prereqs.
 
 - ARM cross compiler: `arm-none-eabi-g++` version 11.0 or above
 
-## Installing ARM cross compiler:
+## Installing ARM cross compiler
 
 ### Mac
 
@@ -39,7 +39,7 @@ check the box.
 This executable along with others others can be found here:
 https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads.
 
-## Verifying Installation
+### Verifying Installation
 
 To check the version run the command `arm-none-eabi-g++ --version`. It should
 look like this:
@@ -50,4 +50,17 @@ arm-none-eabi-g++ (Arm GNU Toolchain 11.3.Rel1) 11.3.1 20220712
 Copyright (C) 2021 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+## Using libhal-trunk (RECOMMENDED)
+
+The "trunk" repository represents the latest packaged code based on github.
+
+This command will insert `libhal-trunk` as the first server to check before
+checking the conan center index. The second command will enable revision mode
+which is required to use `libhal-trunk` in projects.
+
+```bash
+conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan --insert
+conan config set general.revisions_enabled=True
 ```
