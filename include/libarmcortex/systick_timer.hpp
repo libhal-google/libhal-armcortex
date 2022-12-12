@@ -91,6 +91,9 @@ public:
   /**
    * @brief Construct a new systick_timer timer object
    *
+   * PRECONDITION: Interrupt vector table must be initialized before using this
+   * object.
+   *
    * @param p_frequency - the clock source's frequency
    * @param p_source - the source of the clock to the systick timer
    */

@@ -1,8 +1,10 @@
-#include <boost/ut.hpp>
 #include <libarmcortex/dwt_counter.hpp>
 
+#include <boost/ut.hpp>
+
 namespace hal::cortex_m {
-boost::ut::suite dwt_test = []() {
+void dwt_test()
+{
   using namespace boost::ut;
   using namespace hal::cortex_m;
 
@@ -60,22 +62,28 @@ boost::ut::suite dwt_test = []() {
       cortex_m::dwt_counter::dwt()->cyccnt = 0;
       test_subject.register_cpu_frequency(expected_frequency);
       auto count = test_subject.uptime().value();
+      auto freq = test_subject.frequency();
       expect(that % 0 == count);
+      expect(that % 0.01f > std::abs(freq - expected_frequency));
     }
     {
       constexpr auto expected_frequency = 99.0_kHz;
       cortex_m::dwt_counter::dwt()->cyccnt = 1337;
       test_subject.register_cpu_frequency(expected_frequency);
       auto count = test_subject.uptime().value();
+      auto freq = test_subject.frequency();
       expect(that % 1337 == count);
+      expect(that % 0.01f > std::abs(freq - expected_frequency));
     }
     {
       constexpr auto expected_frequency = 154.0_kHz;
       cortex_m::dwt_counter::dwt()->cyccnt = 65'000'192;
       test_subject.register_cpu_frequency(expected_frequency);
       auto count = test_subject.uptime().value();
+      auto freq = test_subject.frequency();
       expect(that % 65'000'192 == count);
+      expect(that % 0.01f > std::abs(freq - expected_frequency));
     }
   };
 };
-}
+}  // namespace hal::cortex_m

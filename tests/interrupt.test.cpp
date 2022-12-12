@@ -2,7 +2,8 @@
 #include <libarmcortex/interrupt.hpp>
 
 namespace hal::cortex_m {
-boost::ut::suite interrupt_test = [] {
+void interrupt_test()
+{
   using namespace boost::ut;
 
   static constexpr size_t expected_interrupt_count = 42;
@@ -224,4 +225,4 @@ boost::ut::suite interrupt_test = [] {
            interrupt::get_vector_table().size());
   };
 };
-}
+}  // namespace hal::cortex_m
