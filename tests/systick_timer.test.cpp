@@ -1,9 +1,12 @@
-#include <boost/ut.hpp>
 #include <libarmcortex/systick_timer.hpp>
+
 #include <libhal/units.hpp>
 
+#include <boost/ut.hpp>
+
 namespace hal::cortex_m {
-boost::ut::suite systick_timer_test = []() {
+void systick_timer_test()
+{
   using namespace boost::ut;
   using namespace std::chrono_literals;
   using namespace hal::literals;
@@ -40,4 +43,4 @@ boost::ut::suite systick_timer_test = []() {
     // Verify
   };
 };
-}
+}  // namespace hal::cortex_m

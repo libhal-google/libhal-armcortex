@@ -11,7 +11,7 @@ required_conan_version = ">=1.50.0"
 
 class LibArmCortexConan(ConanFile):
     name = "libarmcortex"
-    version = "0.2.0"
+    version = "0.2.2"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libarmcortex"
@@ -40,8 +40,8 @@ class LibArmCortexConan(ConanFile):
         }
 
     def requirements(self):
-        self.requires("libhal/0.2.0")
-        self.requires("libhal-util/0.2.2")
+        self.requires("libhal/0.2.2")
+        self.requires("libhal-util/0.2.4")
 
     def validate(self):
         if self.settings.get_safe("compiler.cppstd"):
