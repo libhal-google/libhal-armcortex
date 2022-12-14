@@ -1,4 +1,4 @@
-name: ✅ libhal Checks
+name: ✅ Checks
 
 on:
   workflow_dispatch:
@@ -11,17 +11,8 @@ on:
 
 jobs:
   lint:
-    uses: libhal/libhal/.github/workflows/lint.yml@main
+    uses: libhal/libhal/.github/workflows/checks.yml@main
     with:
       library: libarmcortex
-    secrets: inherit
-  docs:
-    uses: libhal/libhal/.github/workflows/docs.yml@main
-    with:
-      library: libarmcortex
-    secrets: inherit
-  tests:
-    uses: libhal/libhal/.github/workflows/tests.yml@main
-    with:
-      library: libarmcortex
+      coverage: true
     secrets: inherit
