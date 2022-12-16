@@ -4,7 +4,8 @@
 
 # libarmcortex
 
-[![.github/workflows/presubmit.yml](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml/badge.svg?branch=main)](https://github.com/libhal/libarmcortex/actions/workflows/presubmit.yml)
+[![✅ Checks](https://github.com/libhal/libarmcortex/actions/workflows/ci.yml/badge.svg)](https://github.com/libhal/libarmcortex/actions/workflows/ci.yml)
+[![Code Coverage](https://libhal.github.io/libarmcortex/coverage/coverage.svg)](https://libhal.github.io/libarmcortex/coverage/)
 
 # [📚 Software APIs](https://libhal.github.io/libarmcortex/api)
 
