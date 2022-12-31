@@ -102,7 +102,7 @@ public:
   static constexpr intptr_t core_debug_address = 0xE000EDF0UL;
 
   /// @return auto* - Address of the DWT peripheral
-  static auto* dwt() noexcept
+  static auto* dwt()
   {
     if constexpr (hal::is_a_test()) {
       static dwt_registers_t dummy_dwt{};
@@ -112,7 +112,7 @@ public:
   }
 
   /// @return auto* - Address of the Core Debug module
-  static auto* core() noexcept
+  static auto* core()
   {
     if constexpr (hal::is_a_test()) {
       static core_debug_registers_t dummy_core{};
@@ -126,7 +126,7 @@ public:
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  dwt_counter(hertz p_cpu_frequency) noexcept
+  dwt_counter(hertz p_cpu_frequency)
     : m_cpu_frequency(p_cpu_frequency)
   {
     // Enable trace core
@@ -150,18 +150,18 @@ public:
    *
    * @param p_cpu_frequency - the operating frequency of the CPU
    */
-  void register_cpu_frequency(hertz p_cpu_frequency) noexcept
+  void register_cpu_frequency(hertz p_cpu_frequency)
   {
     m_cpu_frequency = p_cpu_frequency;
   }
 
 private:
-  result<std::uint64_t> driver_uptime() noexcept override
+  result<std::uint64_t> driver_uptime() override
   {
     return m_uptime.update(dwt()->cyccnt);
   }
 
-  hertz driver_frequency() noexcept override
+  hertz driver_frequency() override
   {
     return m_cpu_frequency;
   }

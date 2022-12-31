@@ -171,13 +171,13 @@ private:
       .clear<control_register::enable_counter>();
   }
 
-  result<bool> driver_is_running() noexcept override
+  result<bool> driver_is_running() override
   {
     return hal::bit::extract<control_register::enable_counter>(
       sys_tick()->control);
   }
 
-  status driver_cancel() noexcept override
+  status driver_cancel() override
   {
     // All that is needed is to stop the timer. When the timer is started again
     // via `schedule()`, the timer value will be reloaded/reset.
@@ -186,7 +186,7 @@ private:
   }
 
   status driver_schedule(std::function<void(void)> p_callback,
-                         hal::time_duration p_delay) noexcept override
+                         hal::time_duration p_delay) override
   {
     static constexpr std::int64_t maximum = 0x00FFFFFF;
 
