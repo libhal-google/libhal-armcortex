@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 
 #include <libhal-util/bit.hpp>
 #include <libhal-util/static_callable.hpp>
 #include <libhal-util/units.hpp>
+#include <libhal/alias.hpp>
 #include <libhal/config.hpp>
 #include <libhal/timer.hpp>
 
@@ -185,7 +185,7 @@ private:
     return success();
   }
 
-  status driver_schedule(std::function<void(void)> p_callback,
+  status driver_schedule(hal::function_ref<void(void)> p_callback,
                          hal::time_duration p_delay) override
   {
     static constexpr std::int64_t maximum = 0x00FFFFFF;
