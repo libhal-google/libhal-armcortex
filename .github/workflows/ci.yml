@@ -13,6 +13,6 @@ jobs:
   lint:
     uses: libhal/libhal/.github/workflows/checks.yml@main
     with:
-      library: libarmcortex
+      library: libhal-armcortex
       coverage: true
     secrets: inherit

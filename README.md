@@ -2,18 +2,19 @@
   <img height="150" src="logo.svg">
 </p>
 
-# libarmcortex
+# libhal-armcortex
 
-[![✅ Checks](https://github.com/libhal/libarmcortex/actions/workflows/ci.yml/badge.svg)](https://github.com/libhal/libarmcortex/actions/workflows/ci.yml)
-[![Code Coverage](https://libhal.github.io/libarmcortex/coverage/coverage.svg)](https://libhal.github.io/libarmcortex/coverage/)
+[![✅ Checks](https://github.com/libhal/libhal-armcortex/actions/workflows/ci.yml/badge.svg)](https://github.com/libhal/libhal-armcortex/actions/workflows/ci.yml)
+[![Code Coverage](https://libhal.github.io/libhal-armcortex/coverage/coverage.svg)](https://libhal.github.io/libhal-armcortex/coverage/)
 
-# [📚 Software APIs](https://libhal.github.io/libarmcortex/api)
+# [📚 Software APIs](https://libhal.github.io/libhal-armcortex/api)
 
 Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
-* Cortex-M3
 * Cortex-M4
-* Cortex-M7
+* Cortex-M4F
+
+> Plan to support all of the other Cortex M series chips very soon!
 
 # Setup
 
@@ -80,3 +81,10 @@ Copyright (C) 2021 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
+
+# Usage
+
+## Initializing RAM and co-processors
+
+Before an embedded application can properly start, it needs to initialize its
+RAM and any other co-processors it may need at runtime.
