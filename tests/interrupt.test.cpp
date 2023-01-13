@@ -1,5 +1,5 @@
 #include <boost/ut.hpp>
-#include <libarmcortex/interrupt.hpp>
+#include <libhal-armcortex/interrupt.hpp>
 
 namespace hal::cortex_m {
 void interrupt_test()

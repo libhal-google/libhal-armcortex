@@ -1,4 +1,4 @@
-#include <libarmcortex/dwt_counter.hpp>
+#include <libhal-armcortex/dwt_counter.hpp>
 
 int main()
 {
