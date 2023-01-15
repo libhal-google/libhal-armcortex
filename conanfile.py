@@ -11,7 +11,7 @@ required_conan_version = ">=1.50.0"
 
 class LibhalArmCortexConan(ConanFile):
     name = "libhal-armcortex"
-    version = "0.3.5"
+    version = "0.3.6"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -21,7 +21,7 @@ class LibhalArmCortexConan(ConanFile):
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
     settings = "compiler"
-    exports_sources = ("include/*", "linkers/*", "LICENSE")
+    exports_sources = ("include/*", "linkers/*", "LICENSE", "toolchain.cmake")
     no_copy_source = True
 
     def package_id(self):
@@ -73,6 +73,8 @@ class LibhalArmCortexConan(ConanFile):
              "include"), src=os.path.join(self.source_folder, "include"))
         copy(self, "*.ld", dst=os.path.join(self.package_folder,
              "linkers"), src=os.path.join(self.source_folder, "linkers"))
+        copy(self, "toolchain.cmake", src=self.source_folder,
+             dst=self.package_folder)
 
     def package_info(self):
         self.cpp_info.bindirs = []
@@ -82,3 +84,7 @@ class LibhalArmCortexConan(ConanFile):
         linker_path = os.path.join(self.package_folder, "linkers")
         self.cpp_info.exelinkflags = ["-L" + linker_path]
         self.cpp_info.set_property("cmake_target_name", "libhal::armcortex")
+        # Add toolchain.cmake to user_toolchain configuration info to be used
+        # by CMakeToolchain generator
+        f = os.path.join(self.package_folder, "toolchain.cmake")
+        self.conf_info.append("tools.cmake.cmaketoolchain:user_toolchain", f)
