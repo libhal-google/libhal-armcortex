@@ -153,9 +153,7 @@ public:
   ~systick_timer()
   {
     stop();
-    if (!cortex_m::interrupt(event_number).disable()) {
-      std::abort();
-    }
+    cortex_m::interrupt(event_number).disable();
   }
 
 private:
