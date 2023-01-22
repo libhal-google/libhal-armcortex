@@ -346,25 +346,25 @@ public:
     if (!m_id.default_enabled()) {
       nvic_enable_irq();
     }
-    return {};
+    return hal::success();
   }
 
   /**
    * @brief disable interrupt and set the service routine handler to "nop".
    *
-   * @return true - successfully disabled interrupt
-   * @return false - irq value is outside of the bounds of the table
+   * If the IRQ is invalid, then nothing happens.
    */
-  [[nodiscard]] status disable()
+  void disable()
   {
-    HAL_CHECK(sanity_check());
+    if (!sanity_check()) {
+      return;
+    }
 
     vector_table[m_id.vector_index()] = nop;
 
     if (!m_id.default_enabled()) {
       nvic_disable_irq();
     }
-    return {};
   }
 
   /**
@@ -408,7 +408,7 @@ private:
       return hal::new_error(invalid_irq(m_id));
     }
 
-    return {};
+    return hal::success();
   }
 
   bool vector_table_is_initialized()

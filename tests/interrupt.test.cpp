@@ -130,11 +130,9 @@ void interrupt_test()
         static_cast<uint32_t>(shifted_event_number) & 0x1F;
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_event_number).disable());
+      interrupt(expected_event_number).disable();
 
       // Verify
-      expect(that % success);
       expect(that % &interrupt::nop ==
              interrupt::vector_table[expected_event_number]);
 
@@ -153,11 +151,9 @@ void interrupt_test()
         static_cast<uint32_t>(shifted_event_number) & 0x1F;
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_event_number).disable());
+      interrupt(expected_event_number).disable();
 
       // Verify
-      expect(that % success);
       expect(that % &interrupt::nop ==
              interrupt::vector_table[expected_event_number]);
 
@@ -172,11 +168,9 @@ void interrupt_test()
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_event_number).disable());
+      interrupt(expected_event_number).disable();
 
       // Verify
-      expect(that % success);
       // Verify: That the dummy handler was added to the IVT (icer )
       expect(that % &interrupt::nop ==
              interrupt::vector_table[expected_event_number]);
@@ -195,11 +189,7 @@ void interrupt_test()
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success =
-        static_cast<bool>(interrupt(expected_event_number).disable());
-
-      // Verify
-      expect(that % !success);
+      interrupt(expected_event_number).disable();
 
       // Verify: Nothing in the interrupt vector table should have changed
       for (const auto& interrupt_function : interrupt::vector_table) {
