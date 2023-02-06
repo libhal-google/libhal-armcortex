@@ -210,7 +210,7 @@ private:
 
     // Enable interrupt service routine for SysTick and use this callback as the
     // handler
-    HAL_CHECK(cortex_m::interrupt(event_number).enable(handler.get_handler()));
+    cortex_m::interrupt(event_number).enable(handler.get_handler());
 
     // Set the time reload value
     sys_tick()->reload = static_cast<uint32_t>(cycle_count);

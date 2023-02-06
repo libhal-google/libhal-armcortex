@@ -83,7 +83,9 @@ public:
     /**
      * @brief construct an exception_number from an int
      *
-     * @param p_id - interrupt request number
+     * @param p_id - interrupt request number. If this value is beyond the
+     * bounds of the interrupt vector table, meaning it is an invalid exception
+     * number, then all operations will do nothing.
      */
     constexpr exception_number(std::uint16_t p_id)
       : m_id(p_id)
@@ -147,9 +149,9 @@ public:
     }
 
     /**
-     * @brief
+     * @brief Provides the index within the IVT
      *
-     * @return constexpr size_t
+     * @return constexpr size_t - the index position
      */
     [[nodiscard]] constexpr size_t vector_index() const
     {
@@ -177,50 +179,6 @@ public:
 
   private:
     std::uint16_t m_id = 0;
-  };
-
-  /**
-   * @brief Error indicating that the interrupt vector table is not initialized
-   *
-   * This error usually indicates that there is a bug in a driver or application
-   * because it did not initialize the vector table near the start of the
-   * application.
-   *
-   * But this could also be used to signal to run interrupt::initialize()
-   *
-   */
-  struct vector_table_not_initialized
-  {};
-
-  /**
-   * @brief An error indicating that an invalid IRQ has been passed to the
-   * interrupt class which is outside of the bounds of the interrupt vector
-   * table
-   *
-   * This sort of error is not usually recoverable and indicates an error in a
-   * driver.
-   *
-   */
-  struct invalid_irq
-  {
-    /// Beginning IRQ (always -16)
-    static constexpr size_t begin = -core_interrupts;
-
-    /**
-     * @brief Construct a new invalid irq object
-     *
-     * @param p_id - the offending IRQ number
-     */
-    invalid_irq(exception_number p_id)
-      : invalid{ p_id.get_event_number() }
-      , end{ vector_table.size() }
-    {
-    }
-
-    /// Offending IRQ number
-    size_t invalid{};
-    /// The last IRQ in the table
-    size_t end{};
   };
 
   /// Place holder interrupt that performs no work
@@ -334,19 +292,18 @@ public:
    *
    * @param p_handler - the interrupt service routine handler to be executed
    * when the hardware interrupt is fired.
-   * @return true - successfully installed handler and enabled interrupt
-   * @return false - irq value is outside of the bounds of the table
    */
-  [[nodiscard]] status enable(interrupt_pointer p_handler)
+  void enable(interrupt_pointer p_handler)
   {
-    HAL_CHECK(sanity_check());
+    if (!is_valid_irq_request()) {
+      return;
+    }
 
     vector_table[m_id.vector_index()] = p_handler;
 
     if (!m_id.default_enabled()) {
       nvic_enable_irq();
     }
-    return hal::success();
   }
 
   /**
@@ -356,7 +313,7 @@ public:
    */
   void disable()
   {
-    if (!sanity_check()) {
+    if (!is_valid_irq_request()) {
       return;
     }
 
@@ -377,9 +334,11 @@ public:
    * @return true - the handler is equal to the handler in the table
    * @return false -  the handler is not at this index in the table
    */
-  [[nodiscard]] result<bool> verify_vector_enabled(interrupt_pointer p_handler)
+  [[nodiscard]] bool verify_vector_enabled(interrupt_pointer p_handler)
   {
-    HAL_CHECK(sanity_check());
+    if (!is_valid_irq_request()) {
+      return false;
+    }
 
     // Check if the handler match
     auto irq_handler = vector_table[m_id.vector_index()];
@@ -398,17 +357,17 @@ public:
   }
 
 private:
-  status sanity_check()
+  bool is_valid_irq_request()
   {
     if (!vector_table_is_initialized()) {
-      return hal::new_error(vector_table_not_initialized{});
+      return false;
     }
 
     if (!m_id.is_valid()) {
-      return hal::new_error(invalid_irq(m_id));
+      return false;
     }
 
-    return hal::success();
+    return true;
   }
 
   bool vector_table_is_initialized()
