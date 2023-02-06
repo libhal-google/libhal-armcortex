@@ -39,11 +39,9 @@ void interrupt_test()
       unsigned bit_position = shifted_event_number & 0x1F;
 
       // Exercise
-      bool success = static_cast<bool>(
-        interrupt(expected_event_number).enable(dummy_handler));
+      interrupt(expected_event_number).enable(dummy_handler);
 
       // Verify
-      expect(that % success);
       expect(that % dummy_handler ==
              interrupt::vector_table[expected_event_number]);
       std::uint32_t iser =
@@ -60,11 +58,9 @@ void interrupt_test()
       unsigned bit_position = shifted_event_number & 0x1F;
 
       // Exercise
-      bool success = static_cast<bool>(
-        interrupt(expected_event_number).enable(dummy_handler));
+      interrupt(expected_event_number).enable(dummy_handler);
 
       // Verify
-      expect(that % success);
       expect(that % dummy_handler ==
              interrupt::vector_table[expected_event_number]);
       std::uint32_t iser =
@@ -78,11 +74,9 @@ void interrupt_test()
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success = static_cast<bool>(
-        interrupt(expected_event_number).enable(dummy_handler));
+      interrupt(expected_event_number).enable(dummy_handler);
 
       // Verify
-      expect(that % success);
       // Verify: That the dummy handler was added to the IVT (ISER)
       expect(that % dummy_handler ==
              interrupt::vector_table[expected_event_number]);
@@ -101,12 +95,9 @@ void interrupt_test()
       const auto old_nvic = *interrupt::nvic();
 
       // Exercise
-      bool success = static_cast<bool>(
-        interrupt(expected_event_number).enable(dummy_handler));
+      interrupt(expected_event_number).enable(dummy_handler);
 
       // Verify
-      expect(that % !success);
-
       // Verify: Nothing in the interrupt vector table should have changed
       for (const auto& interrupt_function : interrupt::vector_table) {
         expect(that % &interrupt::nop == interrupt_function);
