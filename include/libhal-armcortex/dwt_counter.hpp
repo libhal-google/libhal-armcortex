@@ -156,14 +156,14 @@ public:
   }
 
 private:
-  result<std::uint64_t> driver_uptime() override
+  result<uptime_t> driver_uptime() override
   {
-    return m_uptime.update(dwt()->cyccnt);
+    return uptime_t{ .ticks = m_uptime.update(dwt()->cyccnt) };
   }
 
-  hertz driver_frequency() override
+  result<frequency_t> driver_frequency() override
   {
-    return m_cpu_frequency;
+    return frequency_t{ .operating_frequency = m_cpu_frequency };
   }
 
   overflow_counter<32> m_uptime{};

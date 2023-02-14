@@ -169,22 +169,23 @@ private:
       .clear<control_register::enable_counter>();
   }
 
-  result<bool> driver_is_running() override
+  result<is_running_t> driver_is_running() override
   {
-    return hal::bit::extract<control_register::enable_counter>(
-      sys_tick()->control);
+    auto running_bit = static_cast<bool>(
+      hal::bit::extract<control_register::enable_counter>(sys_tick()->control));
+    return is_running_t{ .is_running = running_bit };
   }
 
-  status driver_cancel() override
+  result<cancel_t> driver_cancel() override
   {
     // All that is needed is to stop the timer. When the timer is started again
     // via `schedule()`, the timer value will be reloaded/reset.
     stop();
-    return success();
+    return cancel_t{};
   }
 
-  status driver_schedule(hal::callback<void(void)> p_callback,
-                         hal::time_duration p_delay) override
+  result<schedule_t> driver_schedule(hal::callback<void(void)> p_callback,
+                                     hal::time_duration p_delay) override
   {
     static constexpr std::int64_t maximum = 0x00FFFFFF;
 
@@ -194,7 +195,7 @@ private:
     } else if (cycle_count > maximum) {
       auto tick_period = wavelength<std::nano>(m_frequency);
       auto max_duration = HAL_CHECK(duration_from_cycles(m_frequency, maximum));
-      return hal::new_error(out_of_bounds{
+      return hal::new_error(out_of_bounds_error{
         .tick_period = tick_period,
         .maximum = max_duration,
       });
@@ -218,7 +219,7 @@ private:
     // Starting the timer will restart the count
     start();
 
-    return success();
+    return schedule_t{};
   }
 
   hertz m_frequency = 1'000'000.0f;
