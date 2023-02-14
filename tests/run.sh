@@ -7,6 +7,9 @@ set -e
 script_path="$(dirname "${BASH_SOURCE[0]}")"
 cd $script_path
 
+# Create test package first
+conan create ..
+
 # Create, if not present, the "build" directory and move into it
 mkdir -p build
 cd build
