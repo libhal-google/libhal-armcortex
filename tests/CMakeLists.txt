@@ -21,9 +21,6 @@ else()
   message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang and GCC, detected ${CMAKE_CXX_COMPILER_ID}.")
 endif()
 
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
-set(CMAKE_BUILD_TYPE "Debug")
-
 find_package(ut REQUIRED CONFIG)
 find_package(libhal-armcortex REQUIRED CONFIG)
 

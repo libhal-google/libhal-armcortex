@@ -14,5 +14,4 @@ jobs:
     uses: libhal/libhal/.github/workflows/checks.yml@main
     with:
       library: libhal-armcortex
-      coverage: true
     secrets: inherit
