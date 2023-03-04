@@ -10,8 +10,8 @@ on:
     - cron: '0 12 * * 0'
 
 jobs:
-  lint:
-    uses: libhal/libhal/.github/workflows/checks.yml@main
+  ci:
+    uses: libhal/ci/.github/workflows/library.yml@main
     with:
       library: libhal-armcortex
     secrets: inherit
