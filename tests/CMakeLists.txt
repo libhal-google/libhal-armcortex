@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.15)
 
 project(unit_test VERSION 0.0.1 LANGUAGES CXX)
 
+if(DEFINED ENABLE_ASAN)
+  set(ASAN_FLAG "-fsanitize=address" CACHE INTERNAL "Use AddressSanatizer")
+endif(DEFINED ENABLE_ASAN)
+
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # require at least gcc 11
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
@@ -22,7 +26,8 @@ else()
 endif()
 
 find_package(ut REQUIRED CONFIG)
-find_package(libhal-armcortex REQUIRED CONFIG)
+find_package(libhal REQUIRED CONFIG)
+find_package(libhal-util REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
   dwt_counter.test.cpp
@@ -35,24 +40,24 @@ target_compile_options(${PROJECT_NAME} PRIVATE
   --coverage
   -fprofile-arcs
   -ftest-coverage
+  ${ASAN_FLAG}
   -Werror
   -Wall
   -Wextra
   -Wshadow
   -Wnon-virtual-dtor
   -Wno-gnu-statement-expression
-  -pedantic
-  -fsanitize=address)
+  -pedantic)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 target_link_options(${PROJECT_NAME} PRIVATE
   --coverage
   -fprofile-arcs
   -ftest-coverage
-  -fsanitize=address)
+  ${ASAN_FLAG})
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  Boost::ut
-  libhal::armcortex)
+  boost-ext-ut::ut
+  libhal::libhal
+  libhal::util)
 
 add_custom_command(TARGET ${PROJECT_NAME}
   POST_BUILD
