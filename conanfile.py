@@ -21,7 +21,7 @@ class LibhalArmCortexConan(ConanFile):
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
     settings = "compiler", "build_type", "os", "arch"
-    exports_sources = "include/*", "tests/*", "LICENSE"
+    exports_sources = "include/*", "linkers/*", "tests/*", "LICENSE"
     generators = "CMakeToolchain", "CMakeDeps"
     no_copy_source = True
 
