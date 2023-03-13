@@ -11,7 +11,7 @@ required_conan_version = ">=1.50.0"
 
 class LibhalArmCortexConan(ConanFile):
     name = "libhal-armcortex"
-    version = "1.0.1"
+    version = "1.0.2"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -21,7 +21,7 @@ class LibhalArmCortexConan(ConanFile):
               "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7",
               "cortex-m23", "cortex-m55", "cortex-m35p", "cortex-m33")
     settings = "compiler", "build_type", "os", "arch"
-    exports_sources = "include/*", "linkers/*", "tests/*", "LICENSE"
+    exports_sources = "include/*", "linker_scripts/*", "tests/*", "LICENSE"
     generators = "CMakeToolchain", "CMakeDeps"
     no_copy_source = True
 
@@ -75,21 +75,29 @@ class LibhalArmCortexConan(ConanFile):
             self.run(os.path.join(self.cpp.build.bindir, "unit_test"))
 
     def package(self):
-        copy(self, "LICENSE", dst=os.path.join(
-            self.package_folder, "licenses"), src=self.source_folder)
-        copy(self, "*.h", dst=os.path.join(self.package_folder, "include"),
+        copy(self,
+             "LICENSE",
+             dst=os.path.join(self.package_folder, "licenses"),
+             src=self.source_folder)
+        copy(self,
+             "*.h",
+             dst=os.path.join(self.package_folder, "include"),
              src=os.path.join(self.source_folder, "include"))
-        copy(self, "*.hpp", dst=os.path.join(self.package_folder,
-             "include"), src=os.path.join(self.source_folder, "include"))
-        copy(self, "*.ld", dst=os.path.join(self.package_folder,
-             "linkers"), src=os.path.join(self.source_folder, "linkers"))
+        copy(self,
+             "*.hpp",
+             dst=os.path.join(self.package_folder, "include"),
+             src=os.path.join(self.source_folder, "include"))
+        copy(self,
+             "*.ld",
+             dst=os.path.join(self.package_folder, "linker_scripts"),
+             src=os.path.join(self.source_folder, "linker_scripts"))
 
     def package_info(self):
         self.cpp_info.bindirs = []
         self.cpp_info.frameworkdirs = []
         self.cpp_info.libdirs = []
         self.cpp_info.resdirs = []
-        linker_path = os.path.join(self.package_folder, "linkers")
+        linker_path = os.path.join(self.package_folder, "linker_scripts")
         self.cpp_info.exelinkflags = ["-L" + linker_path]
         self.cpp_info.set_property("cmake_target_name", "libhal::armcortex")
 
