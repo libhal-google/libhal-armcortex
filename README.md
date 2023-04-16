@@ -1,7 +1,3 @@
-<p align="center">
-  <img height="150" src="logo.svg">
-</p>
-
 # libhal-armcortex
 
 [![✅ Checks](https://github.com/libhal/libhal-armcortex/actions/workflows/ci.yml/badge.svg)](https://github.com/libhal/libhal-armcortex/actions/workflows/ci.yml)
@@ -13,7 +9,7 @@
 [![Latest Version](https://libhal.github.io/libhal-armcortex/latest_version.svg)](https://github.com/libhal/libhal-armcortex/blob/main/conanfile.py)
 [![ConanCenter Version](https://repology.org/badge/version-for-repo/conancenter/libhal-armcortex.svg)](https://conan.io/center/libhal-armcortex)
 
-# [📚 Software APIs](https://libhal.github.io/libhal-armcortex/api)
+## [📚 Software APIs](https://libhal.github.io/libhal-armcortex/api)
 
 Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
@@ -22,20 +18,34 @@ Drivers for ARM cortex-m series micro-controllers. Currently supports:
 
 > Plan to support all of the other Cortex M series chips very soon!
 
-# Setup
+## Setup
 
-## [Installing libhal prereqs](https://libhal.github.io/setup/)
+### [Installing libhal prereqs](https://libhal.github.io/setup/)
 
-# Using Arm GNU Toolchain
+### Using Arm GNU Toolchain
 
 ```
 [tool_requires]
 gnu-arm-embedded-toolchain/11.3.0
 ```
 
-# Usage
+## Usage
 
-## Initializing RAM and co-processors
+### Initializing RAM and co-processors
 
 Before an embedded application can properly start, it needs to initialize its
 RAM and any other co-processors it may need at runtime.
+
+## :busts_in_silhouette: Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
+
+## License
+
+Apache 2.0; see [`LICENSE`](LICENSE) for details.
+
+## Disclaimer
+
+This project is not an official Google project. It is not supported by
+Google and Google specifically disclaims all warranties as to its quality,
+merchantability, or fitness for a particular purpose.
