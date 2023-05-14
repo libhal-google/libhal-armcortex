@@ -19,3 +19,10 @@ int main()
   hal::cortex_m::dwt_counter counter(1'000'000.0f);
   return counter.uptime().value().ticks;
 }
+
+namespace boost {
+void throw_exception(std::exception const& e)
+{
+  std::abort();
+}
+}  // namespace boost

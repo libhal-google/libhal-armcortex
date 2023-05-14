@@ -43,14 +43,20 @@ find_package(ut REQUIRED CONFIG)
 find_package(libhal REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 
-add_executable(${PROJECT_NAME}
+add_executable(unit_test
+  ../src/dwt_counter.cpp
+  ../src/interrupt.cpp
+  ../src/systick_timer.cpp
+  ../src/system_controller.cpp
+
   dwt_counter.test.cpp
   interrupt.test.cpp
   main.test.cpp
   systick_timer.test.cpp)
 
-target_include_directories(${PROJECT_NAME} PUBLIC . ../include)
-target_compile_options(${PROJECT_NAME} PRIVATE
+target_include_directories(unit_test PRIVATE . ../include ../src)
+
+target_compile_options(unit_test PRIVATE
   --coverage
   -fprofile-arcs
   -ftest-coverage
@@ -62,21 +68,16 @@ target_compile_options(${PROJECT_NAME} PRIVATE
   -Wnon-virtual-dtor
   -Wno-gnu-statement-expression
   -pedantic)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_options(${PROJECT_NAME} PRIVATE
+
+target_compile_features(unit_test PRIVATE cxx_std_20)
+
+target_link_options(unit_test PRIVATE
   --coverage
   -fprofile-arcs
   -ftest-coverage
   ${ASAN_FLAG})
-target_link_libraries(${PROJECT_NAME} PRIVATE
+
+target_link_libraries(unit_test PRIVATE
   boost-ext-ut::ut
   libhal::libhal
   libhal::util)
-
-add_custom_command(TARGET ${PROJECT_NAME}
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND}
-  -P ${CMAKE_SOURCE_DIR}/remove_gcda.cmake
-  COMMENT "Deleting Previous Coverage Files..."
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
