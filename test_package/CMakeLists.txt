@@ -15,10 +15,10 @@
 cmake_minimum_required(VERSION 3.15)
 project(test_package LANGUAGES CXX)
 
-find_package(libhal-armcortex REQUIRED CONFIG)
+find_package(libhal-armcortex CONFIG REQUIRED)
 
-add_executable(${PROJECT_NAME} main.cpp)
-target_include_directories(${PROJECT_NAME} PUBLIC .)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
-target_link_libraries(${PROJECT_NAME} PRIVATE libhal::armcortex)
+add_executable(test_package main.cpp newlib.cpp)
+target_include_directories(test_package PUBLIC .)
+target_compile_features(test_package PRIVATE cxx_std_20)
+set_target_properties(test_package PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(test_package PRIVATE libhal::armcortex)

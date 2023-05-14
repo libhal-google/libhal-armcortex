@@ -1,0 +1,17 @@
+arch:
+  thumbv7em:
+    float_abi: ["soft", "softfp", "hard"]
+    processor:
+      [
+        "cortex-m0",
+        "cortex-m0plus",
+        "cortex-m1",
+        "cortex-m3",
+        "cortex-m4",
+        "cortex-m4f",
+        "cortex-m7",
+        "cortex-m23",
+        "cortex-m55",
+        "cortex-m35p",
+        "cortex-m33",
+      ]

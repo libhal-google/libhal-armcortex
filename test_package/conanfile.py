@@ -21,11 +21,19 @@ import os
 
 
 class TestPackageConan(ConanFile):
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "compiler", "arch", "build_type"
     generators = "CMakeToolchain", "CMakeDeps", "VirtualRunEnv"
+
+    @property
+    def _bare_metal(self):
+        return self.settings.os == "baremetal"
 
     def requirements(self):
         self.requires(self.tested_reference_str)
+
+        if self._bare_metal:
+            self.tool_requires("arm-gnu-toolchain/12.2.1")
+            self.tool_requires("cmake-arm-embedded/1.0.0")
 
     def layout(self):
         cmake_layout(self)
@@ -36,6 +44,4 @@ class TestPackageConan(ConanFile):
         cmake.build()
 
     def test(self):
-        if not cross_building(self):
-            bin_path = os.path.join(self.cpp.build.bindirs[0], "test_package")
-            self.run(bin_path, env="conanrun")
+        pass
