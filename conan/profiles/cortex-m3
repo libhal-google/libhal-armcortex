@@ -1,0 +1,3 @@
+{% set cpu = "cortex-m3" %}
+{% set float_abi = "soft" %}
+{% include "cortex-m" %}
