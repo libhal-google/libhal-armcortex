@@ -41,17 +41,6 @@ class libhal_arm_cortex_conan(ConanFile):
                        "LICENSE", "CMakeLists.txt")
     generators = "CMakeToolchain", "CMakeDeps", "VirtualBuildEnv"
     no_copy_source = True
-    options = {
-        "cpu": [
-            "cortex-m0", "cortex-m0plus", "cortex-m1", "cortex-m3", "cortex-m4", "cortex-m4f", "cortex-m7", "cortex-m23",
-            "cortex-m55", "cortex-m35p", "cortex-m33",
-        ],
-        "float-abi": ["soft", "hard"]
-    }
-    default_options = {
-        "cpu": "cortex-m0",
-        "float-abi": "soft",
-    }
 
     @property
     def _min_cppstd(self):
