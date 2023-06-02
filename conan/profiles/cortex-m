@@ -1,6 +1,6 @@
 [settings]
 compiler=gcc
-compiler.cppstd=20
+compiler.cppstd=gnu20
 compiler.libcxx=libstdc++
 compiler.version=12.2
 os=baremetal
