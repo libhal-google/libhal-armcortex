@@ -11,7 +11,7 @@ on:
 
 jobs:
   ci:
-    uses: libhal/ci/.github/workflows/library.yml@2.0.0
+    uses: libhal/ci/.github/workflows/library.yml@2.1.0
     with:
       library: libhal-armcortex
     secrets: inherit
