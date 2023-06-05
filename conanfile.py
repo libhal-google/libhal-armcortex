@@ -175,14 +175,3 @@ class libhal_arm_cortex_conan(ConanFile):
         ):
             linker_path = os.path.join(self.package_folder, "linker_scripts")
             self.cpp_info.exelinkflags.append("-L" + linker_path)
-
-            gcc_flags = [
-                f"-mcpu={ str(self.settings.arch.processor) }",
-                f"-mfloat-abi={ str(self.settings.arch.float_abi) }"
-            ]
-            linker_flags = ["--specs=nano.specs", "--specs=nosys.specs"]
-
-            self.cpp_info.cflags.extend(gcc_flags)
-            self.cpp_info.cxxflags.extend(gcc_flags)
-            self.cpp_info.exelinkflags.extend(gcc_flags)
-            self.cpp_info.exelinkflags.extend(linker_flags)
