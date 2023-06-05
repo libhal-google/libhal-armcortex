@@ -40,8 +40,8 @@ foreach(demo IN LISTS DEMOS)
         libhal::armcortex
         libhal::util)
 
-    target_compile_options(${current_project} PUBLIC --specs=nano.specs --specs=nosys.specs)
-    target_link_options(${current_project} PUBLIC --specs=nano.specs --specs=nosys.specs -T${CMAKE_SOURCE_DIR}/linker.ld)
+    target_link_options(${current_project} PUBLIC
+        -T${CMAKE_SOURCE_DIR}/linker.ld)
 
     arm_cortex_post_build(${current_project})
 endforeach()
