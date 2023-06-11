@@ -1,3 +1,4 @@
 {% set cpu = "cortex-m4" %}
 {% set float_abi = "soft" %}
-{% include "cortex-m" %}
+{% set fpu = "auto" %}
+{% include "thumbv7" %}

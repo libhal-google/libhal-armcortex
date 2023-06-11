@@ -28,7 +28,12 @@ class demos(ConanFile):
         cmake_layout(self, build_folder=platform_directory)
 
     def validate(self):
-        if self.settings.os != "baremetal" or self.settings.arch != "thumbv7em":
+        valid_build = (self.settings.os == "baremetal" and
+                       (self.settings.arch == "thumbv7" or
+                        self.settings.arch == "thumbv6" or
+                        self.settings.arch == "thumbv8"))
+
+        if not valid_build:
             raise ConanInvalidConfiguration(
                 f"Only baremetal OS is allowed here!")
 
@@ -36,7 +41,7 @@ class demos(ConanFile):
         self.tool_requires("cmake-arm-embedded/1.0.0")
 
     def requirements(self):
-        self.requires("libhal-armcortex/2.0.0")
+        self.requires("libhal-armcortex/2.0.0-alpha.1")
         self.requires("libhal-util/2.0.0")
 
     def build(self):

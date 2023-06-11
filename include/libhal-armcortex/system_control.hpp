@@ -26,18 +26,6 @@ namespace hal::cortex_m {
 void initialize_floating_point_unit();
 
 /**
- * @brief Attempt to enable the floating point unit coprocessor
- *
- * Will check for the presence of a floating point coprocessor and it exists,
- * turn it on. This will not cause a UsageFault if called on a processor without
- * an FPU. This function is helpful for applications where the drivers are the
- * same for a particular target platform, but the FPU is optional in some
- * subsets of the platform chip family.
- *
- */
-void try_initialize_floating_point_unit();
-
-/**
  * @brief Set the address of the systems interrupt vector table
  *
  * The interrupt vector table (IVT) is held in ROM which means that, either
