@@ -33,7 +33,11 @@ int main()
 {
   hal::cortex_m::initialize_data_section();
 
-  hal::cortex_m::try_initialize_floating_point_unit();
+// GCC provides the __ARM_FP Macros to indicate if float-abi is set to
+// "hard" or "softfp" and not defined if set to "soft"
+#if defined(__ARM_FP)
+  hal::cortex_m::initialize_floating_point_unit();
+#endif
 
   auto is_finished = application();
 

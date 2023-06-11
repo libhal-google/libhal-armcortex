@@ -27,7 +27,7 @@ required_conan_version = ">=1.50.0"
 
 class libhal_arm_cortex_conan(ConanFile):
     name = "libhal-armcortex"
-    version = "2.0.0"
+    version = "2.0.0-alpha.1"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -58,25 +58,6 @@ class libhal_arm_cortex_conan(ConanFile):
     def _bare_metal(self):
         return self.settings.os == "baremetal"
 
-    @property
-    def _valid_arch_for_baremetal(self):
-        if str(self.settings.arch) != "thumbv7em":
-            return False
-
-        processors = ["cortex-m0", "cortex-m0plus", "cortex-m1",
-                      "cortex-m3", "cortex-m4", "cortex-m4f",
-                      "cortex-m7", "cortex-m23", "cortex-m55",
-                      "cortex-m35p", "cortex-m33"]
-        float_abis = ["soft", "hard"]
-
-        is_gcc = self.settings.compiler == "gcc"
-        valid_processor = str(
-            self.settings.arch.get_safe("processor")) in processors
-        valid_float_abi = str(
-            self.settings.arch.get_safe("float_abi")) in float_abis
-
-        return (is_gcc and valid_processor and valid_float_abi)
-
     def validate(self):
         if self.settings.get_safe("compiler.cppstd"):
             check_min_cppstd(self, self._min_cppstd)
@@ -94,18 +75,6 @@ class libhal_arm_cortex_conan(ConanFile):
         if minimum_version and lazy_lt_semver(version, minimum_version):
             raise ConanInvalidConfiguration(
                 f"{self.name} {self.version} requires C++{self._min_cppstd}, which your compiler ({compiler}-{version}) does not support")
-
-        if self._bare_metal and not self._valid_arch_for_baremetal:
-            raise ConanInvalidConfiguration(
-                f"Host settings are not valid for os == 'baremetal'!\n"
-                f"settings.compiler must be 'gcc' not { self.settings.compiler }, \n"
-                f"settings.arch must be 'thumbv7em' not { self.settings.arch }"
-                f"\n"
-                f"settings.arch.processor must be: { processors } not "
-                f"'{ self.settings.arch.get_safe('processor') }'\n"
-                f"settings.arch.float_abi must be: { float_abis } not "
-                f"'{ self.settings.arch.get_safe('float_abi') }'"
-            )
 
     def build_requirements(self):
         self.tool_requires("cmake-arm-embedded/1.0.0")
@@ -128,7 +97,8 @@ class libhal_arm_cortex_conan(ConanFile):
             cmake.configure(variables={
                 "BUILD_TESTING": "OFF",
                 "LIBHAL_GCC_CPU": f"-mcpu={self.settings.arch.processor }",
-                "LIBHAL_GCC_FLOAT_ABI": f"-mfloat-abi={ self.settings.arch.float_abi }",
+                "LIBHAL_GCC_FLOAT_ABI":
+                f"-mfloat-abi={ self.settings.arch.get_safe('float_abi', 'soft') }",
             })
 
         else:
@@ -171,7 +141,9 @@ class libhal_arm_cortex_conan(ConanFile):
         if (
             self._bare_metal and
             self.settings.compiler == "gcc" and
-            self.settings.arch == "thumbv7em"
+            (self.settings.arch == "thumbv6" or
+             self.settings.arch == "thumbv7" or
+             self.settings.arch == "thumbv8")
         ):
             linker_path = os.path.join(self.package_folder, "linker_scripts")
             self.cpp_info.exelinkflags.append("-L" + linker_path)

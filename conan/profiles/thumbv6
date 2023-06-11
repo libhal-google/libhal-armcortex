@@ -1,0 +1,16 @@
+[settings]
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++
+compiler.version=12.2
+os=baremetal
+arch=thumbv6
+arch.processor={{ cpu }}
+
+[tool_requires]
+arm-gnu-toolchain/12.2.1
+
+[conf]
+tools.build:cflags=["-mfloat-abi=soft", "-mcpu={{ cpu }}", "-fno-exceptions", "-fno-rtti"]
+tools.build:cxxflags=["-mfloat-abi=soft", "-mcpu={{ cpu }}", "-fno-exceptions", "-fno-rtti"]
+tools.build:exelinkflags=["--specs=nano.specs", "--specs=nosys.specs", "-mfloat-abi=soft", "-mcpu={{ cpu }}", "-fno-exceptions", "-fno-rtti"]

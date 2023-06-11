@@ -25,15 +25,6 @@ void initialize_floating_point_unit()
                              (0b11 << 11 * 2)); /* set CP11 Full Access */
 }
 
-void try_initialize_floating_point_unit()
-{
-  std::uint32_t cpacr = scb->cpacr;
-  std::uint32_t cp10 = (cpacr >> 20) & 0b11;
-  if (cp10 != 0b00) {
-    initialize_floating_point_unit();
-  }
-}
-
 void set_interrupt_vector_table_address(void* p_table_location)
 {
   // Relocate the interrupt vector table the vector buffer. By default this
