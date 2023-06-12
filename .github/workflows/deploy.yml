@@ -11,37 +11,37 @@ on:
 
 jobs:
   cortex-m0:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@2.0.0
+    uses: libhal/ci/.github/workflows/platform_deploy.yml@3.0.1
     with:
       profile: cortex-m0
     secrets: inherit
 
   cortex-m0plus:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@2.0.0
+    uses: libhal/ci/.github/workflows/platform_deploy.yml@3.0.1
     with:
       profile: cortex-m0plus
     secrets: inherit
 
   cortex-m1:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@2.0.0
+    uses: libhal/ci/.github/workflows/platform_deploy.yml@3.0.1
     with:
       profile: cortex-m1
     secrets: inherit
 
   cortex-m3:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@2.0.0
+    uses: libhal/ci/.github/workflows/platform_deploy.yml@3.0.1
     with:
       profile: cortex-m3
     secrets: inherit
 
   cortex-m4:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@2.0.0
+    uses: libhal/ci/.github/workflows/platform_deploy.yml@3.0.1
     with:
       profile: cortex-m4
     secrets: inherit
 
   cortex-m4f:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@2.0.0
+    uses: libhal/ci/.github/workflows/platform_deploy.yml@3.0.1
     with:
       profile: cortex-m4f
     secrets: inherit
