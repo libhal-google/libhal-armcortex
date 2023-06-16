@@ -27,7 +27,7 @@ find_package(libhal-armcortex REQUIRED CONFIG)
 set(DEMOS dwt_counter)
 
 add_library(startup_code main.cpp)
-
+target_compile_options(startup_code PRIVATE -g)
 target_link_libraries(startup_code PRIVATE libhal::armcortex libhal::util)
 
 foreach(demo IN LISTS DEMOS)
@@ -36,6 +36,7 @@ foreach(demo IN LISTS DEMOS)
     add_executable(${current_project} applications/${demo}.cpp)
 
     target_compile_features(${current_project} PRIVATE cxx_std_20)
+    target_compile_options(${current_project} PRIVATE -g)
     target_link_libraries(${current_project} PRIVATE startup_code
         libhal::armcortex
         libhal::util)
