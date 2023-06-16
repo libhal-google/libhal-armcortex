@@ -41,7 +41,7 @@ class demos(ConanFile):
         self.tool_requires("cmake-arm-embedded/1.0.0")
 
     def requirements(self):
-        self.requires("libhal-armcortex/2.0.0-alpha.1")
+        self.requires("libhal-armcortex/2.0.0-alpha.2")
         self.requires("libhal-util/2.0.0")
 
     def build(self):

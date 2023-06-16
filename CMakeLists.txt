@@ -31,6 +31,7 @@ add_library(libhal-armcortex
 
 target_include_directories(libhal-armcortex PUBLIC include)
 target_compile_features(libhal-armcortex PRIVATE cxx_std_20)
+target_compile_options(libhal-armcortex PRIVATE -g)
 
 if(DEFINED LIBHAL_GCC_CPU AND DEFINED LIBHAL_GCC_FLOAT_ABI)
   target_compile_options(libhal-armcortex PRIVATE
