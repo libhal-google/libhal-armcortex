@@ -44,5 +44,5 @@ foreach(demo IN LISTS DEMOS)
     target_link_options(${current_project} PUBLIC
         -T${CMAKE_SOURCE_DIR}/linker.ld)
 
-    arm_cortex_post_build(${current_project})
+    libhal_post_build(${current_project})
 endforeach()

@@ -62,27 +62,13 @@ class libhal_arm_cortex_conan(ConanFile):
         if self.settings.get_safe("compiler.cppstd"):
             check_min_cppstd(self, self._min_cppstd)
 
-        def lazy_lt_semver(v1, v2):
-            lv1 = [int(v) for v in v1.split(".")]
-            lv2 = [int(v) for v in v2.split(".")]
-            min_length = min(len(lv1), len(lv2))
-            return lv1[:min_length] < lv2[:min_length]
-
-        compiler = str(self.settings.compiler)
-        version = str(self.settings.compiler.version)
-        minimum_version = self._compilers_minimum_version.get(compiler, False)
-
-        if minimum_version and lazy_lt_semver(version, minimum_version):
-            raise ConanInvalidConfiguration(
-                f"{self.name} {self.version} requires C++{self._min_cppstd}, which your compiler ({compiler}-{version}) does not support")
-
     def build_requirements(self):
-        self.tool_requires("cmake-arm-embedded/1.0.0")
+        self.tool_requires("libhal-cmake-util/[^1.0.0]")
+        self.test_requires("boost-ext-ut/1.1.9")
 
     def requirements(self):
         self.requires("libhal/[^2.0.0]")
         self.requires("libhal-util/[^2.0.0]")
-        self.test_requires("boost-ext-ut/1.1.9")
 
     def layout(self):
         cmake_layout(self)

@@ -24,16 +24,8 @@ class TestPackageConan(ConanFile):
     settings = "os", "compiler", "arch", "build_type"
     generators = "CMakeToolchain", "CMakeDeps", "VirtualRunEnv"
 
-    @property
-    def _bare_metal(self):
-        return self.settings.os == "baremetal"
-
     def requirements(self):
         self.requires(self.tested_reference_str)
-
-        if self._bare_metal:
-            self.tool_requires("arm-gnu-toolchain/12.2.1")
-            self.tool_requires("cmake-arm-embedded/1.0.0")
 
     def layout(self):
         cmake_layout(self)
