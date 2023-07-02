@@ -35,12 +35,12 @@ void dwt_counter::register_cpu_frequency(hertz p_cpu_frequency)
   m_cpu_frequency = p_cpu_frequency;
 }
 
-result<dwt_counter::uptime_t> dwt_counter::driver_uptime()
+dwt_counter::uptime_t dwt_counter::driver_uptime()
 {
   return uptime_t{ .ticks = m_uptime.update(dwt->cyccnt) };
 }
 
-result<dwt_counter::frequency_t> dwt_counter::driver_frequency()
+dwt_counter::frequency_t dwt_counter::driver_frequency()
 {
   return frequency_t{ .operating_frequency = m_cpu_frequency };
 }

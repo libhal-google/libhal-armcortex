@@ -27,7 +27,7 @@ hal::status application()
   while (true) {
     using namespace std::chrono_literals;
     value++;
-    HAL_CHECK(hal::delay(counter, 100ms));
+    hal::delay(counter, 100ms);
   }
 
   return hal::success();
