@@ -48,8 +48,8 @@ public:
   void register_cpu_frequency(hertz p_cpu_frequency);
 
 private:
-  result<uptime_t> driver_uptime() override;
-  result<frequency_t> driver_frequency() override;
+  uptime_t driver_uptime() override;
+  frequency_t driver_frequency() override;
 
   overflow_counter<32> m_uptime{};
   hertz m_cpu_frequency{ 1'000'000 };
