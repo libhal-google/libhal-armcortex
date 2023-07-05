@@ -1,3 +1,2 @@
 {% set cpu = "cortex-m0plus" %}
-{% set float_abi = "soft" %}
 {% include "thumbv6" %}
