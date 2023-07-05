@@ -313,6 +313,41 @@ testing, then we want to ensure that the linker scripts are not added to the
 linker flags. Will cause an error because the linkers for applications on a
 OS like linux or mac will not match the one in the bare metal case.
 
+## Customizing Profiles & Linker Scripts
+
+In libhal, customization of profiles and linker scripts is a straightforward
+process. This allows developers to tailor the build process to their specific
+needs and hardware configurations.
+
+To customize a profile, you need to create a new profile. You have the option to
+simple include one of the platform's pre-made profile files. Once you finished
+making your profile, you then, set the platform option name to anything other
+than the available platforms in the library. It's important to note that Conan
+profiles always prioritize and overwrite the fields based on the last one
+defined. This means that any settings in your custom profile will overwrite the
+corresponding settings in the included platform profile.
+
+For example, the libhal-lpc40 library has several predefined platforms:
+`lpc4072`, `lpc4074`, `lpc4076`, `lpc4078`, and `lpc4088`. If you want to
+customize the build process for this library, you could create a new profile
+named `lpc40xx`. This profile would include the `lpc40` platform profile and set
+the platform option to `lpc40xx`.
+
+```jinja2
+include(lpc4078)
+
+[options]
+platform=lpc40xx
+```
+
+Setting the platform option to `lpc40xx` causes the recipe to skip adding a
+linker to the linker flags. This allows you, as the developer, to choose your
+own linker script for your build. This is required when the platform option is
+set to a value not recognized by the library.
+
+By customizing profiles and linker scripts in this way, you can easily adapt the
+build process to different hardware configurations and project requirements.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
