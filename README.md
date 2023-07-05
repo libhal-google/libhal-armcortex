@@ -217,9 +217,101 @@ library's chip family.
 By creating and using these profiles, you can easily compile the library for
 different platforms and MCUs while ensuring the correct compiler flags are used.
 
-## How linker scripts work
+## How Linker Scripts Work
 
-TBD
+Linker scripts are used to control the memory layout of the final binary file.
+They define the memory regions and sections of the binary, and specify where and
+how the linker should place the code and data.
+
+In libhal-armcortex, there is a standard linker script named `standard.ld`
+located in the `linker_scripts/libhal-armcortex` directory. This script is
+included by other linker scripts in the library to provide a common base
+configuration. When `lihal-armcortex` is added as a dependancy of a library or
+application the path to the linker scripts in `linker_scripts` directory are
+added to the linker flags of the build, making them accessible within other
+linker scripts via the `INCLUDE "libhal-armcortex/standard.ld` command.
+
+Here is the content of `standard.ld`:
+
+```ld
+INCLUDE "libhal-armcortex/third_party/standard.ld"
+```
+
+This script includes another script `third_party/standard.ld` which contains the
+actual linker commands. This script has 4 variables that must be defined for
+the linker script to work as intended. These variables are
+
+- **`__flash`**: Memory mapped flash memory start address
+- **`__flash_size`**: Size of flash memory
+- **`__ram`**: Start of RAM address
+- **`__ram_size`**: RAM size
+- **`__stack_size`** (optional): Size of stack memory. Why is this important?
+  Stack memory is needed for functions to operate. It provides them with the
+  memory hold local variables. This value provides a safety buffer for the
+  system's stack memory. If an application uses up enough statically defined
+  memory as to leave no room for the applications stack, exceeds this amount,
+  then the linker script will issue an error about running out of memory.
+
+Currently, libhal only provides `standard.ld` which supports a single memory
+mapped flash and ram block.
+
+Additional linker scripts for multi-ram, multi-flash, and execute from RAM only
+systems are planned to be provided at a later date when systems with those
+requirements appear in the ecosystem.
+
+## Using Linker Scripts in a Platform Library
+
+Linker scripts are used in platform libraries to define the memory layout
+specific to the platform. For example, in the libhal-lpc40 library, there are
+several linker scripts in the `linker_scripts/libhal-lpc40` directory. Each of
+these scripts corresponds to a specific model of the lpc40 series of MCUs.
+
+Here is an example of the `lpc4076.ld` linker script from libhal-lpc40:
+
+```ld
+__flash = 0x00000000;
+__flash_size = 256K;
+__ram = 0x10000000;
+__ram_size = 64K;
+__stack_size = 1K;
+
+INCLUDE "libhal-armcortex/standard.ld"
+```
+
+This script defines the memory layout for the lpc4076 MCU. It specifies the
+start addresses and sizes of the flash and RAM memory regions, as well as the
+stack size. It then includes the standard linker script from libhal-armcortex to
+provide the common base configuration.
+
+To create a new platform profile, you would create a new linker script similar
+to this one, but with the memory layout specific to your platform. You would
+then use this linker script when building your platform library.
+
+Every supported microcontroller in the platform library should have an
+associated linker script with its name like so `platform_name.ld`. The platform
+library should have a `package_info()` section like this in their
+`conanfile.py`:
+
+```python
+def package_info(self):
+    self.cpp_info.set_property("cmake_target_name", "libhal::lpc40")
+    self.cpp_info.libs = ["libhal-lpc40"]
+
+    if self._bare_metal and self._is_me:
+        linker_path = os.path.join(self.package_folder, "linker_scripts")
+        link_script = "-Tlibhal-lpc40/" + str(self.options.platform) + ".ld"
+        self.cpp_info.exelinkflags = ["-L" + linker_path, link_script]
+```
+
+This will add the platform linker scripts to the linker script flags. The
+`self._bare_metal` property determines if the OS is equal to `baremetal`.
+The `self._is_me` property determines if the platform option is one of the
+microcontrollers supported by this library. This together check if the system
+is being cross built and targeting a platform we have a linker script for. In
+other cases, if this isn't a bare metal build, for example a build for unit
+testing, then we want to ensure that the linker scripts are not added to the
+linker flags. Will cause an error because the linkers for applications on a
+OS like linux or mac will not match the one in the bare metal case.
 
 ## Contributing
 
