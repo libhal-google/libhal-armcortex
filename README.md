@@ -7,36 +7,112 @@
 [![GitHub forks](https://img.shields.io/github/forks/libhal/libhal-armcortex.svg)](https://github.com/libhal/libhal-armcortex/network)
 [![GitHub issues](https://img.shields.io/github/issues/libhal/libhal-armcortex.svg)](https://github.com/libhal/libhal-armcortex/issues)
 [![Latest Version](https://libhal.github.io/libhal-armcortex/latest_version.svg)](https://github.com/libhal/libhal-armcortex/blob/main/conanfile.py)
-[![ConanCenter Version](https://repology.org/badge/version-for-repo/conancenter/libhal-armcortex.svg)](https://conan.io/center/libhal-armcortex)
 
-## [📚 Software APIs](https://libhal.github.io/libhal-armcortex/api)
+libhal-armcortex is a processor library in the libhal ecosystem. It provides a
+set of drivers and functions for ARM Cortex processors, allowing developers to
+write portable and efficient embedded software.
 
-Drivers for ARM cortex-m series micro-controllers. Currently supports:
+## 📚 Software APIs & Usage
 
-* Cortex-M4
-* Cortex-M4F
+To learn about the available drivers and APIs see the
+[Doxygen](https://libhal.github.io/libhal-lpc40/api)
+documentation page or look at the
+[`include/libhal-lpc40`](https://github.com/libhal/libhal-lpc40/tree/main/include/libhal-lpc40)
+directory.
 
-> Plan to support all of the other Cortex M series chips very soon!
+To see how each driver is used see the
+[`demos/`](https://github.com/libhal/libhal-lpc40/tree/main/demos) directory.
 
-## Setup
+## 🧰 Setup
 
-### [Installing libhal prereqs](https://libhal.github.io/setup/)
+Following the
+[🚀 Getting Started](https://libhal.github.io/2.1/getting_started/)
+instructions.
 
-### Using Arm GNU Toolchain
+## 📡 Installing Profiles
 
+Profiles define which platform you mean to build your project against. These
+profiles are needed for code and demos in this repo and for applications that
+wish to execute on an lpc40 device.
+
+```bash
+conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git
 ```
-[tool_requires]
-gnu-arm-embedded-toolchain/11.3.0
+
+Note that running these functions is safe. THey simply overwrite the old files
+with the latest files. So running this for `libhal-armcortex` between this and
+other platform libraries is fine.
+
+## 🏗️ Building Demos
+
+To build demos, start at the root of the repo and execute the following command:
+
+```bash
+conan build demos -pr cortex-m4f -s build_type=Debug
 ```
 
-## Usage
+This will build the demos for the `cortex-m4f` microcontroller in `Debug` mode.
+Replace `cortex-m4f` with any of the other profiles. Available profiles are:
 
-### Initializing RAM and co-processors
+- `cortex-m0`
+- `cortex-m0plus`
+- `cortex-m1`
+- `cortex-m3`
+- `cortex-m4`
+- `cortex-m4f`
 
-Before an embedded application can properly start, it needs to initialize its
-RAM and any other co-processors it may need at runtime.
+## 🏁 Startup & Initialization
 
-## :busts_in_silhouette: Contributing
+Startup function to initialize the data section. This is REQUIRED for systems
+that do not load themselves from storage into RAM. If the executable is executed
+from flash then `hal::cortex_m::initialize_data_section()` is required.
+
+```C++
+#include <libhal-armcortex/startup.hpp>
+
+hal::cortex_m::initialize_data_section();
+```
+
+The `arm-gnu-toolchain` package provides the `crt0.s` startup file which
+initializes the BSS (uninitialized) section of memory. If this startup file
+is not used, then a call to `hal::cortex_m::initialize_bss_section()` is
+required.
+
+```C++
+#include <libhal-armcortex/startup.hpp>
+
+hal::cortex_m::initialize_data_section();
+hal::cortex_m::initialize_bss_section();
+```
+
+If the device has an FPU (floating point unit) then a call to
+`hal::cortex_m::initialize_floating_point_unit()` is required before any
+floating point unit registers or floating point instructions.
+
+```C++
+#include <libhal-armcortex/system_control.hpp>
+
+hal::cortex_m::initialize_floating_point_unit();
+```
+
+## Using `conan/profiles`
+
+This processor library contains profiles templates:
+
+- `thumbv6`
+- `thumbv7`
+- `thumbv8`
+
+And complete profiles:
+
+- `cortex-m0`
+- `cortex-m0plus`
+- `cortex-m1`
+- `cortex-m3`
+- `cortex-m4`
+- `cortex-m4f`
+
+## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
 
