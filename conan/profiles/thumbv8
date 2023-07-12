@@ -12,6 +12,6 @@ arch.processor={{ cpu }}
 arm-gnu-toolchain/12.2.1
 
 [conf]
-tools.build:cflags=["-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-fno-exceptions", "-fno-rtti"]
+tools.build:cflags=["-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}"]
 tools.build:cxxflags=["-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-fno-exceptions", "-fno-rtti"]
 tools.build:exelinkflags=["--specs=nano.specs", "--specs=nosys.specs", "-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-fno-exceptions", "-fno-rtti"]
