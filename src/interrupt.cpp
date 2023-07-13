@@ -27,9 +27,14 @@
 
 namespace hal::cortex_m {
 
+namespace {
+/// Pointer to a statically allocated interrupt vector table
+std::span<interrupt_pointer> vector_table{};
+}  // namespace
+
 bool vector_table_is_initialized()
 {
-  return get_interrupt_vector_table_address() != 0x0000'0000;
+  return get_interrupt_vector_table_address() == vector_table.data();
 }
 
 /// Place holder interrupt that performs no work
@@ -65,7 +70,7 @@ void nvic_disable_irq(interrupt::exception_number p_id)
   *interrupt_clear = p_id.enable_mask();
 }
 
-const std::span<interrupt_pointer>& interrupt::get_vector_table()
+const std::span<interrupt_pointer> interrupt::get_vector_table()
 {
   return vector_table;
 }
@@ -125,33 +130,57 @@ bool interrupt::verify_vector_enabled(interrupt_pointer p_handler)
 
 void interrupt::reset()
 {
+  disable_interrupts();
+
   // Set all bits in the interrupt clear register to 1s to disable those
   // interrupt vectors.
   for (auto& clear_interrupt : nvic->icer) {
     clear_interrupt = 0xFFFF'FFFF;
   }
 
-  set_interrupt_vector_table_address(nullptr);
+  // Reset vector table
+  vector_table = std::span<interrupt_pointer>();
 }
 
 void interrupt::setup(std::span<interrupt_pointer> p_vector_table)
 {
-  if (get_interrupt_vector_table_address() == nullptr) {
-    // Assign the statically allocated vector within this scope to the global
-    // vector_table span so that it can be accessed in other
-    // functions. This is valid because the interrupt vector table has static
-    // storage duration and will exist throughout the duration of the
-    // application.
-    vector_table = p_vector_table;
-
-    // Will fill the interrupt handler and vector table with a function that
-    // does nothing.
-    std::fill(vector_table.begin(), vector_table.end(), nop);
-
-    // Relocate the interrupt vector table the vector buffer. By default this
-    // will be set to the address of the start of flash memory for the MCU.
-    set_interrupt_vector_table_address(vector_table.data());
+  if (p_vector_table.data() == vector_table.data() &&
+      p_vector_table.size() == vector_table.size()) {
+    return;
   }
+
+  // Assign the statically allocated vector within this scope to the global
+  // vector_table span so that it can be accessed in other
+  // functions. This is valid because the interrupt vector table has static
+  // storage duration and will exist throughout the duration of the
+  // application.
+  vector_table = p_vector_table;
+
+  // Fill the interrupt handler and vector table with a function that does
+  // nothing functions. Skip the first 2 which are the top of stock and reset
+  // handlers.
+  std::fill(vector_table.begin(), vector_table.end(), &nop);
+
+  disable_interrupts();
+
+  // Relocate the interrupt vector table the vector buffer. By default this
+  // will be set to the address of the start of flash memory for the MCU.
+  set_interrupt_vector_table_address(vector_table.data());
+
+  enable_interrupts();
 }
 
+void interrupt::disable_interrupts()
+{
+#if defined(__arm__)
+  asm volatile("cpsid i" : : : "memory");
+#endif
+}
+
+void interrupt::enable_interrupts()
+{
+#if defined(__arm__)
+  asm volatile("cpsie i" : : : "memory");
+#endif
+}
 }  // namespace hal::cortex_m

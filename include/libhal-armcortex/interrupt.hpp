@@ -31,9 +31,6 @@ using interrupt_pointer = void (*)();
 class interrupt
 {
 public:
-  /// Pointer to a statically allocated interrupt vector table
-  static inline std::span<interrupt_pointer> vector_table;
-
   /// The core interrupts that all cortex m3, m4, m7 processors have
   static constexpr size_t core_interrupts = 16;
 
@@ -130,9 +127,9 @@ public:
      * @return true - is a valid interrupt for this system
      * @return false - this interrupt is beyond the range of valid interrupts
      */
-    [[nodiscard]] constexpr bool is_valid() const
+    [[nodiscard]] bool is_valid() const
     {
-      return m_id < vector_table.size();
+      return m_id < get_vector_table().size();
     }
 
     /**
@@ -203,9 +200,13 @@ public:
   /**
    * @brief Get a reference to interrupt vector table object
    *
-   * @return const std::span<interrupt_pointer>&  - interrupt vector table
+   * @return const std::span<interrupt_pointer>  - interrupt vector table
    */
-  static const std::span<interrupt_pointer>& get_vector_table();
+  static const std::span<interrupt_pointer> get_vector_table();
+
+  static void disable_interrupts();
+
+  static void enable_interrupts();
 
   /**
    * @brief Construct a new interrupt object
