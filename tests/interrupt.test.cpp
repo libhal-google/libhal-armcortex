@@ -36,18 +36,19 @@ void interrupt_test()
 
   should("interrupt::initialize()") = [&] {
     // Setup
-    expect(that % nullptr == interrupt::vector_table.data());
-    expect(that % 0 == interrupt::vector_table.size());
+    expect(that % nullptr == interrupt::get_vector_table().data());
+    expect(that % 0 == interrupt::get_vector_table().size());
 
     // Exercise
     interrupt::initialize<expected_interrupt_count>();
 
-    auto pointer = reinterpret_cast<intptr_t>(interrupt::vector_table.data());
+    auto pointer =
+      reinterpret_cast<intptr_t>(interrupt::get_vector_table().data());
 
     // Verify
-    expect(that % nullptr != interrupt::vector_table.data());
+    expect(that % nullptr != interrupt::get_vector_table().data());
     expect(that % (expected_interrupt_count + interrupt::core_interrupts) ==
-           interrupt::vector_table.size());
+           interrupt::get_vector_table().size());
     expect(that % pointer == scb->vtor);
   };
 
@@ -67,7 +68,7 @@ void interrupt_test()
 
       // Verify
       expect(that % dummy_handler ==
-             interrupt::vector_table[expected_event_number]);
+             interrupt::get_vector_table()[expected_event_number]);
       std::uint32_t iser = (1U << bit_position) & nvic->iser.at(index);
       expect(that % (1 << shifted_event_number) == iser);
     };
@@ -85,7 +86,7 @@ void interrupt_test()
 
       // Verify
       expect(that % dummy_handler ==
-             interrupt::vector_table[expected_event_number]);
+             interrupt::get_vector_table()[expected_event_number]);
       std::uint32_t iser = (1U << bit_position) & nvic->iser.at(index);
       expect(that % (1 << shifted_event_number) == iser);
     };
@@ -101,7 +102,7 @@ void interrupt_test()
       // Verify
       // Verify: That the dummy handler was added to the IVT (ISER)
       expect(that % dummy_handler ==
-             interrupt::vector_table[expected_event_number]);
+             interrupt::get_vector_table()[expected_event_number]);
       // Verify: ISER[] should not have changed when enable() succeeds but the
       // IRQ is less than 0.
       for (size_t i = 0; i < old_nvic.iser.size(); i++) {
@@ -121,8 +122,10 @@ void interrupt_test()
 
       // Verify
       // Verify: Nothing in the interrupt vector table should have changed
-      for (const auto& interrupt_function : interrupt::vector_table) {
-        expect(that % &interrupt::nop == interrupt_function);
+      for (const auto interrupt_function : interrupt::get_vector_table()) {
+        auto nop_address = reinterpret_cast<void*>(&interrupt::nop);
+        auto function_address = reinterpret_cast<void*>(interrupt_function);
+        expect(that % nop_address == function_address);
       }
 
       // Verify: ISER[] should not have changed when enable() fails.
@@ -147,7 +150,7 @@ void interrupt_test()
 
       // Verify
       expect(that % &interrupt::nop ==
-             interrupt::vector_table[expected_event_number]);
+             interrupt::get_vector_table()[expected_event_number]);
 
       std::uint32_t icer = (1U << bit_position) & nvic->icer.at(index);
       expect(that % (1 << shifted_event_number) == icer);
@@ -167,7 +170,7 @@ void interrupt_test()
 
       // Verify
       expect(that % &interrupt::nop ==
-             interrupt::vector_table[expected_event_number]);
+             interrupt::get_vector_table()[expected_event_number]);
 
       std::uint32_t icer = (1U << bit_position) & nvic->icer.at(index);
       expect(that % (1 << shifted_event_number) == icer);
@@ -184,7 +187,7 @@ void interrupt_test()
       // Verify
       // Verify: That the dummy handler was added to the IVT (icer )
       expect(that % &interrupt::nop ==
-             interrupt::vector_table[expected_event_number]);
+             interrupt::get_vector_table()[expected_event_number]);
       // Verify: icer[] should not have changed when disable() succeeds but the
       // IRQ is less than 0.
       for (size_t i = 0; i < old_nvic.icer.size(); i++) {
@@ -203,8 +206,10 @@ void interrupt_test()
       interrupt(expected_event_number).disable();
 
       // Verify: Nothing in the interrupt vector table should have changed
-      for (const auto& interrupt_function : interrupt::vector_table) {
-        expect(that % &interrupt::nop == interrupt_function);
+      for (const auto interrupt_function : interrupt::get_vector_table()) {
+        auto nop_address = reinterpret_cast<void*>(&interrupt::nop);
+        auto function_address = reinterpret_cast<void*>(interrupt_function);
+        expect(that % nop_address == function_address);
       }
 
       // Verify: icer[] should not have changed when disable() fails.
@@ -216,13 +221,13 @@ void interrupt_test()
 
   should("interrupt::get_vector_table()") = [&] {
     // Setup
-    expect(that % nullptr != interrupt::vector_table.data());
-    expect(that % 0 != interrupt::vector_table.size());
+    expect(that % nullptr != interrupt::get_vector_table().data());
+    expect(that % 0 != interrupt::get_vector_table().size());
 
     // Exercise & Verify
-    expect(interrupt::vector_table.data() ==
+    expect(interrupt::get_vector_table().data() ==
            interrupt::get_vector_table().data());
-    expect(that % interrupt::vector_table.size() ==
+    expect(that % interrupt::get_vector_table().size() ==
            interrupt::get_vector_table().size());
   };
 };

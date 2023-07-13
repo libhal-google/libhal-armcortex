@@ -55,7 +55,7 @@ void systick_timer::register_cpu_frequency(hertz p_frequency,
   // reloading of the register and will stop the timer.
   sys_tick->current_value = 0;
 
-  auto control = hal::bit::modify(sys_tick->control);
+  auto control = hal::bit::value<std::uint32_t>(0);
   control.set<systick_control_register::enable_interrupt>();
 
   if (p_source == clock_source::processor) {
@@ -66,6 +66,8 @@ void systick_timer::register_cpu_frequency(hertz p_frequency,
 
   // Disable the counter if it was previously enabled.
   control.clear<systick_control_register::enable_counter>();
+
+  sys_tick->control = control.get();
 }
 
 systick_timer::~systick_timer()
@@ -120,7 +122,7 @@ result<systick_timer::schedule_t> systick_timer::driver_schedule(
   // handler
   cortex_m::interrupt(event_number).enable(handler.get_handler());
 
-  // Set the time reload value
+  sys_tick->current_value = 0;
   sys_tick->reload = static_cast<uint32_t>(cycle_count);
 
   // Starting the timer will restart the count
