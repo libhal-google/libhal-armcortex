@@ -22,36 +22,42 @@ jobs:
     uses: libhal/ci/.github/workflows/platform_deploy.yml@4.0.1
     with:
       profile: cortex-m0
+      upload: true
     secrets: inherit
 
   cortex-m0plus:
     uses: libhal/ci/.github/workflows/platform_deploy.yml@4.0.1
     with:
       profile: cortex-m0plus
+      upload: true
     secrets: inherit
 
   cortex-m1:
     uses: libhal/ci/.github/workflows/platform_deploy.yml@4.0.1
     with:
       profile: cortex-m1
+      upload: true
     secrets: inherit
 
   cortex-m3:
     uses: libhal/ci/.github/workflows/platform_deploy.yml@4.0.1
     with:
       profile: cortex-m3
+      upload: true
     secrets: inherit
 
   cortex-m4:
     uses: libhal/ci/.github/workflows/platform_deploy.yml@4.0.1
     with:
       profile: cortex-m4
+      upload: true
     secrets: inherit
 
   cortex-m4f:
     uses: libhal/ci/.github/workflows/platform_deploy.yml@4.0.1
     with:
       profile: cortex-m4f
+      upload: true
     secrets: inherit
 
   release:
