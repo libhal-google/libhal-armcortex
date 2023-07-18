@@ -159,10 +159,18 @@ void interrupt::setup(std::span<interrupt_pointer> p_vector_table)
   // application.
   vector_table = p_vector_table;
 
+  // Copy the "top-of-stack" from the original vector table
+  vector_table[0] = reinterpret_cast<interrupt_pointer*>(
+    get_interrupt_vector_table_address())[0];
+
+  // Copy the "reset" handler from the original vector table
+  vector_table[1] = reinterpret_cast<interrupt_pointer*>(
+    get_interrupt_vector_table_address())[1];
+
   // Fill the interrupt handler and vector table with a function that does
   // nothing functions. Skip the first 2 which are the top of stock and reset
   // handlers.
-  std::fill(vector_table.begin(), vector_table.end(), &nop);
+  std::fill(vector_table.begin() + 2, vector_table.end(), &nop);
 
   disable_interrupts();
 
