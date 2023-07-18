@@ -21,7 +21,6 @@
 #include <utility>
 
 #include <libhal-armcortex/system_control.hpp>
-#include <libhal/error.hpp>
 
 #include "interrupt_reg.hpp"
 
@@ -55,18 +54,22 @@ bool is_valid_irq_request(interrupt::exception_number p_id)
     return false;
   }
 
+  if (p_id.vector_index() > vector_table.size()) {
+    return false;
+  }
+
   return true;
 }
 
 void nvic_enable_irq(interrupt::exception_number p_id)
 {
-  auto* interrupt_enable = &nvic->iser.at(p_id.register_index());
+  auto* interrupt_enable = &nvic->iser[p_id.register_index()];
   *interrupt_enable = p_id.enable_mask();
 }
 
 void nvic_disable_irq(interrupt::exception_number p_id)
 {
-  auto* interrupt_clear = &nvic->icer.at(p_id.register_index());
+  auto* interrupt_clear = &nvic->icer[p_id.register_index()];
   *interrupt_clear = p_id.enable_mask();
 }
 
@@ -124,7 +127,7 @@ bool interrupt::verify_vector_enabled(interrupt_pointer p_handler)
     return true;
   }
 
-  uint32_t enable_register = nvic->iser.at(m_id.register_index());
+  uint32_t enable_register = nvic->iser[m_id.register_index()];
   return (enable_register & m_id.enable_mask()) == 0U;
 }
 
