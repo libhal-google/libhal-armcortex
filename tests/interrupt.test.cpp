@@ -23,14 +23,26 @@
 #include <boost/ut.hpp>
 
 namespace hal::cortex_m {
+namespace {
+void top_of_stack()
+{
+}
+void reset_handler()
+{
+}
+}  // namespace
+
 void interrupt_test()
 {
   using namespace boost::ut;
 
   static constexpr size_t expected_interrupt_count = 42;
 
+  std::array<interrupt_pointer, 2> original_ivt{ top_of_stack, reset_handler };
   auto stub_out_nvic = stub_out_registers(&nvic);
   auto stub_out_scb = stub_out_registers(&scb);
+
+  scb->vtor = reinterpret_cast<std::intptr_t>(original_ivt.data());
 
   expect(that % 16 == interrupt::core_interrupts);
 
@@ -50,6 +62,25 @@ void interrupt_test()
     expect(that % (expected_interrupt_count + interrupt::core_interrupts) ==
            interrupt::get_vector_table().size());
     expect(that % pointer == scb->vtor);
+
+    // Verify: Nothing in the interrupt vector table should have changed
+    auto top_of_stack_expected = reinterpret_cast<void*>(top_of_stack);
+    auto reset_handler_expected = reinterpret_cast<void*>(reset_handler);
+
+    auto ivt_0 = interrupt::get_vector_table()[0];
+    auto ivt_1 = interrupt::get_vector_table()[1];
+    auto top_of_stack_actual = reinterpret_cast<void*>(ivt_0);
+    auto reset_handler_actual = reinterpret_cast<void*>(ivt_1);
+
+    expect(that % top_of_stack_expected == top_of_stack_actual);
+    expect(that % reset_handler_expected == reset_handler_actual);
+
+    for (const auto interrupt_function :
+         interrupt::get_vector_table().subspan(2)) {
+      auto nop_address = reinterpret_cast<void*>(&interrupt::nop);
+      auto function_address = reinterpret_cast<void*>(interrupt_function);
+      expect(that % nop_address == function_address);
+    }
   };
 
   should("interrupt::enable()") = [&] {
@@ -122,7 +153,19 @@ void interrupt_test()
 
       // Verify
       // Verify: Nothing in the interrupt vector table should have changed
-      for (const auto interrupt_function : interrupt::get_vector_table()) {
+      auto top_of_stack_expected = reinterpret_cast<void*>(top_of_stack);
+      auto reset_handler_expected = reinterpret_cast<void*>(reset_handler);
+
+      auto ivt_0 = interrupt::get_vector_table()[0];
+      auto ivt_1 = interrupt::get_vector_table()[1];
+      auto top_of_stack_actual = reinterpret_cast<void*>(ivt_0);
+      auto reset_handler_actual = reinterpret_cast<void*>(ivt_1);
+
+      expect(that % top_of_stack_expected == top_of_stack_actual);
+      expect(that % reset_handler_expected == reset_handler_actual);
+
+      for (const auto interrupt_function :
+           interrupt::get_vector_table().subspan(2)) {
         auto nop_address = reinterpret_cast<void*>(&interrupt::nop);
         auto function_address = reinterpret_cast<void*>(interrupt_function);
         expect(that % nop_address == function_address);
@@ -206,7 +249,19 @@ void interrupt_test()
       interrupt(expected_event_number).disable();
 
       // Verify: Nothing in the interrupt vector table should have changed
-      for (const auto interrupt_function : interrupt::get_vector_table()) {
+      auto top_of_stack_expected = reinterpret_cast<void*>(top_of_stack);
+      auto reset_handler_expected = reinterpret_cast<void*>(reset_handler);
+
+      auto ivt_0 = interrupt::get_vector_table()[0];
+      auto ivt_1 = interrupt::get_vector_table()[1];
+      auto top_of_stack_actual = reinterpret_cast<void*>(ivt_0);
+      auto reset_handler_actual = reinterpret_cast<void*>(ivt_1);
+
+      expect(that % top_of_stack_expected == top_of_stack_actual);
+      expect(that % reset_handler_expected == reset_handler_actual);
+
+      for (const auto interrupt_function :
+           interrupt::get_vector_table().subspan(2)) {
         auto nop_address = reinterpret_cast<void*>(&interrupt::nop);
         auto function_address = reinterpret_cast<void*>(interrupt_function);
         expect(that % nop_address == function_address);
