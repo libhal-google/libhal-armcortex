@@ -18,7 +18,6 @@ from conan import ConanFile
 from conan.tools.cmake import CMake, cmake_layout
 from conan.tools.files import copy
 from conan.tools.build import check_min_cppstd
-from conan.errors import ConanInvalidConfiguration
 import os
 
 
@@ -27,7 +26,7 @@ required_conan_version = ">=1.50.0"
 
 class libhal_arm_cortex_conan(ConanFile):
     name = "libhal-armcortex"
-    version = "2.0.2"
+    version = "2.0.3"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -68,7 +67,7 @@ class libhal_arm_cortex_conan(ConanFile):
 
     def requirements(self):
         self.requires("libhal/[^2.0.0]")
-        self.requires("libhal-util/[^2.0.0]")
+        self.requires("libhal-util/[^3.0.0]")
 
     def layout(self):
         cmake_layout(self)

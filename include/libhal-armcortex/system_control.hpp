@@ -14,6 +14,10 @@
 
 #pragma once
 
+/**
+ * @brief libhal drivers for the ARM Cortex-M series of processors
+ *
+ */
 namespace hal::cortex_m {
 /**
  * @brief Enable the floating point unit coprocessor
