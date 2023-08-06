@@ -34,26 +34,26 @@ struct systick_register_t
   const volatile uint32_t calib;
 };
 
-/// Namespace containing the bitmask objects that are used to manipulate the
+/// Namespace containing the bit_mask objects that are used to manipulate the
 /// ARM Cortex Mx SysTick Timer.
 namespace systick_control_register {
 /// When set to 1, takes the contents of the reload counter, writes it to
 /// the current_value register and begins counting down to zero. Setting
 /// this to zero stops the counter. Restarting the counter will restart the
 /// count.
-static constexpr auto enable_counter = hal::bit::mask::from<0>();
+static constexpr auto enable_counter = hal::bit_mask::from<0>();
 
 /// When SysTick timer's count goes from 1 to 0, if this bit is set, the
 /// SysTick interrupt will fire.
-static constexpr auto enable_interrupt = hal::bit::mask::from<1>();
+static constexpr auto enable_interrupt = hal::bit_mask::from<1>();
 
 /// If set to 0, clock source is external, if set to 1, clock source follows
 /// the processor clock.
-static constexpr auto clock_source = hal::bit::mask::from<2>();
+static constexpr auto clock_source = hal::bit_mask::from<2>();
 
 /// Set to 1 when count falls from 1 to 0. This bit is cleared on the next
 /// read of this register.
-static constexpr auto count_flag = hal::bit::mask::from<16>();
+static constexpr auto count_flag = hal::bit_mask::from<16>();
 };  // namespace systick_control_register
 
 /// The address of the sys_tick register

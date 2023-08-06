@@ -28,13 +28,13 @@ namespace hal::cortex_m {
 
 void start()
 {
-  hal::bit::modify(sys_tick->control)
+  hal::bit_modify(sys_tick->control)
     .set<systick_control_register::enable_counter>();
 }
 
 void stop()
 {
-  hal::bit::modify(sys_tick->control)
+  hal::bit_modify(sys_tick->control)
     .clear<systick_control_register::enable_counter>();
 }
 
@@ -55,7 +55,7 @@ void systick_timer::register_cpu_frequency(hertz p_frequency,
   // reloading of the register and will stop the timer.
   sys_tick->current_value = 0;
 
-  auto control = hal::bit::value<std::uint32_t>(0);
+  auto control = hal::bit_value<std::uint32_t>(0);
   control.set<systick_control_register::enable_interrupt>();
 
   if (p_source == clock_source::processor) {
@@ -79,7 +79,7 @@ systick_timer::~systick_timer()
 result<systick_timer::is_running_t> systick_timer::driver_is_running()
 {
   auto running_bit = static_cast<bool>(
-    hal::bit::extract<systick_control_register::enable_counter>(
+    hal::bit_extract<systick_control_register::enable_counter>(
       sys_tick->control));
   return is_running_t{ .is_running = running_bit };
 }
