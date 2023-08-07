@@ -25,6 +25,32 @@ namespace hal::cortex_m {
 using interrupt_pointer = void (*)();
 
 /**
+ * @brief IRQ numbers for core processor interrupts
+ *
+ */
+enum class irq
+{
+  top_of_stack = 0,
+  reset = 1,
+  /// @brief  non-maskable interrupt
+  nmi = 2,
+  hard_fault = 3,
+  memory_management_fault = 4,
+  bus_fault = 5,
+  usage_fault = 6,
+  reserve7 = 7,
+  reserve8 = 8,
+  reserve9 = 9,
+  reserve10 = 10,
+  /// @brief Software initiated interrupt
+  sv_call = 11,
+  reserve12 = 12,
+  reserve13 = 13,
+  pend_sv = 14,
+  systick = 15,
+};
+
+/**
  * @brief Cortex M series interrupt controller
  *
  */
