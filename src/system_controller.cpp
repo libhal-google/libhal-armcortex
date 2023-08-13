@@ -49,4 +49,18 @@ void reset()
   // System reset is asynchronous, so the code needs to wait.
   hal::halt();
 }
+
+void wait_for_interrupt()
+{
+#if defined(__arm__)
+  asm volatile("wfi");
+#endif
+}
+
+void wait_for_event()
+{
+#if defined(__arm__)
+  asm volatile("wfe");
+#endif
+}
 }  // namespace hal::cortex_m
