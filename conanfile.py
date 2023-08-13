@@ -21,12 +21,12 @@ from conan.tools.build import check_min_cppstd
 import os
 
 
-required_conan_version = ">=1.50.0"
+required_conan_version = ">=2.0.6"
 
 
 class libhal_arm_cortex_conan(ConanFile):
     name = "libhal-armcortex"
-    version = "2.1.0"
+    version = "2.2.0"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"

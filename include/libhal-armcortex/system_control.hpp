@@ -73,4 +73,20 @@ void* get_interrupt_vector_table_address();
  *
  */
 void reset();
+
+/**
+ * @brief Executes WFI instruction
+ *
+ * The WFI instruction stops the CPU, reducing power, and wakes up on interrupt.
+ *
+ */
+void wait_for_interrupt();
+
+/**
+ * @brief Executes WFE instruction
+ *
+ * The WFE instruction stops the CPU, reducing power, and wakes up on event.
+ *
+ */
+void wait_for_event();
 }  // namespace hal::cortex_m
