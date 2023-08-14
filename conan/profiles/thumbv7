@@ -10,9 +10,9 @@ arch.fpu={{ fpu }}
 arch.processor={{ cpu }}
 
 [tool_requires]
-arm-gnu-toolchain/12.2.1
+arm-gnu-toolchain/12.2.1#b7f80575b375a5e677525f70c1761dda
 
 [conf]
 tools.build:cflags=["-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-mfpu={{ fpu }}", "-mthumb", "-ffunction-sections", "-fdata-sections"]
 tools.build:cxxflags=["-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-mfpu={{ fpu }}", "-fno-exceptions", "-fno-rtti", "-mthumb", "-ffunction-sections", "-fdata-sections"]
-tools.build:exelinkflags=["--specs=nano.specs", "--specs=nosys.specs", "-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-mfpu={{ fpu }}", "-fno-exceptions", "-fno-rtti", "-mthumb", "-ffunction-sections", "-fdata-sections"]
+tools.build:exelinkflags=["--specs=nano.specs", "--specs=nosys.specs", "--specs=picolibc.specs", "-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-mfpu={{ fpu }}", "-fno-exceptions", "-fno-rtti", "-mthumb", "-ffunction-sections", "-fdata-sections"]
