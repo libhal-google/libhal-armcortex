@@ -15,14 +15,16 @@
 # limitations under the License.
 
 from conan import ConanFile
-from conan.tools.build import cross_building
 from conan.tools.cmake import CMake, cmake_layout
-import os
 
 
 class TestPackageConan(ConanFile):
     settings = "os", "compiler", "arch", "build_type"
     generators = "CMakeToolchain", "CMakeDeps", "VirtualRunEnv"
+
+    @property
+    def _bare_metal(self):
+        return self.settings.os == "baremetal"
 
     def requirements(self):
         self.requires(self.tested_reference_str)
@@ -32,7 +34,7 @@ class TestPackageConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure()
+        cmake.configure(variables={"BAREMETAL": self._bare_metal})
         cmake.build()
 
     def test(self):
