@@ -9,7 +9,7 @@ arch.float_abi={{ float_abi }}
 arch.processor={{ cpu }}
 
 [tool_requires]
-arm-gnu-toolchain/12.2.1#b7f80575b375a5e677525f70c1761dda
+arm-gnu-toolchain/12.3.1
 
 [conf]
 tools.build:cflags=["-mfloat-abi={{ float_abi }}", "-mcpu={{ cpu }}", "-mthumb", "-ffunction-sections", "-fdata-sections"]
