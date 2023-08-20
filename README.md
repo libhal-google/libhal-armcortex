@@ -14,13 +14,10 @@ write portable and efficient embedded software.
 ## 📚 Software APIs & Usage
 
 To learn about the available drivers and APIs see the
-[Doxygen](https://libhal.github.io/libhal-lpc40/api)
+[libhal cortex_m APIs](https://libhal.github.io/2.2/api/namespacehal_1_1cortex__m/)
 documentation page or look at the
-[`include/libhal-lpc40`](https://github.com/libhal/libhal-lpc40/tree/main/include/libhal-lpc40)
+[`include/libhal-armcortex`](https://github.com/libhal/libhal-armcortex/tree/main/include/libhal-armcortex)
 directory.
-
-To see how each driver is used see the
-[`demos/`](https://github.com/libhal/libhal-lpc40/tree/main/demos) directory.
 
 ## 🧰 Setup
 
@@ -117,7 +114,7 @@ While the `thumbv8` profile sets the compiler flags for the ARM `Cortex-M23` and
 compiler=gcc
 compiler.cppstd=20
 compiler.libcxx=libstdc++
-compiler.version=12.2
+compiler.version=12.3
 os=baremetal
 arch=thumbv7
 arch.float_abi={{ float_abi }}
