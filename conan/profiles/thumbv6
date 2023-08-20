@@ -8,7 +8,7 @@ arch=thumbv6
 arch.processor={{ cpu }}
 
 [tool_requires]
-arm-gnu-toolchain/12.3.1
+arm-gnu-toolchain/12.2.1
 
 [conf]
 tools.build:cflags=["-mfloat-abi=soft", "-mcpu={{ cpu }}", "-mthumb", "-ffunction-sections", "-fdata-sections"]
