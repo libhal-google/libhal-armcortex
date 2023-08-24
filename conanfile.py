@@ -79,24 +79,37 @@ class libhal_arm_cortex_conan(ConanFile):
         cmake.build()
 
     def package(self):
+        lib_dir = os.path.join(self.package_folder, "lib")
+
         copy(self,
              "LICENSE",
-             dst=os.path.join(self.package_folder, "licenses"),
-             src=self.source_folder)
+             src=self.source_folder,
+             dst=os.path.join(self.package_folder, "licenses"))
 
         copy(self,
              "*.h",
-             dst=os.path.join(self.package_folder, "include"),
-             src=os.path.join(self.source_folder, "include"))
+             src=os.path.join(self.source_folder, "include"),
+             dst=os.path.join(self.package_folder, "include"))
+
         copy(self,
              "*.hpp",
-             dst=os.path.join(self.package_folder, "include"),
-             src=os.path.join(self.source_folder, "include"))
+             src=os.path.join(self.source_folder, "include"),
+             dst=os.path.join(self.package_folder, "include"))
 
         copy(self,
              "*.ld",
-             dst=os.path.join(self.package_folder, "linker_scripts"),
-             src=os.path.join(self.source_folder, "linker_scripts"))
+             src=os.path.join(self.source_folder, "linker_scripts"),
+             dst=os.path.join(self.package_folder, "linker_scripts"))
+
+        copy(self,
+             "*.cpp",
+             src=os.path.join(self.source_folder, "src"),
+             dst=os.path.join(self.package_folder, "src"))
+
+        copy(self,
+             "*.hpp",
+             src=os.path.join(self.source_folder, "src"),
+             dst=os.path.join(self.package_folder, "src"))
 
         cmake = CMake(self)
         cmake.install()
