@@ -14,34 +14,28 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-project(libhal-armcortex VERSION 0.0.1 LANGUAGES CXX)
+project(libhal-armcortex LANGUAGES CXX)
 
-find_package(libhal REQUIRED CONFIG)
-find_package(libhal-util REQUIRED CONFIG)
+libhal_test_and_make_library(
+  LIBRARY_NAME libhal-armcortex
 
-if(NOT BUILD_TESTING STREQUAL OFF)
-  add_subdirectory(tests)
-endif()
-
-add_library(libhal-armcortex
+  SOURCES
   src/system_controller.cpp
   src/dwt_counter.cpp
   src/interrupt.cpp
-  src/systick_timer.cpp)
+  src/systick_timer.cpp
 
-target_include_directories(libhal-armcortex PUBLIC include)
-target_compile_features(libhal-armcortex PRIVATE cxx_std_20)
-target_compile_options(libhal-armcortex PRIVATE -g)
+  TEST_SOURCES
+  tests/dwt_counter.test.cpp
+  tests/interrupt.test.cpp
+  tests/main.test.cpp
+  tests/systick_timer.test.cpp
 
-if(DEFINED LIBHAL_GCC_CPU AND DEFINED LIBHAL_GCC_FLOAT_ABI)
-  target_compile_options(libhal-armcortex PRIVATE
-    ${LIBHAL_GCC_CPU}
-    ${LIBHAL_GCC_FLOAT_ABI}
-  )
-endif()
+  PACKAGES
+  libhal
+  libhal-util
 
-target_link_libraries(libhal-armcortex PRIVATE
+  LINK_LIBRARIES
   libhal::libhal
-  libhal::util)
-
-install(TARGETS libhal-armcortex)
+  libhal::util
+)

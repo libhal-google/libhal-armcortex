@@ -44,7 +44,7 @@ void interrupt::nop()
   }
 }
 
-bool is_valid_irq_request(interrupt::exception_number p_id)
+bool is_valid_irq_request(const interrupt::exception_number& p_id)
 {
   if (!vector_table_is_initialized()) {
     return false;
@@ -61,13 +61,13 @@ bool is_valid_irq_request(interrupt::exception_number p_id)
   return true;
 }
 
-void nvic_enable_irq(interrupt::exception_number p_id)
+void nvic_enable_irq(const interrupt::exception_number& p_id)
 {
   auto* interrupt_enable = &nvic->iser[p_id.register_index()];
   *interrupt_enable = p_id.enable_mask();
 }
 
-void nvic_disable_irq(interrupt::exception_number p_id)
+void nvic_disable_irq(const interrupt::exception_number& p_id)
 {
   auto* interrupt_clear = &nvic->icer[p_id.register_index()];
   *interrupt_clear = p_id.enable_mask();
