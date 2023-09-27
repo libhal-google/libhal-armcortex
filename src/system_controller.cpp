@@ -36,7 +36,7 @@ void* get_interrupt_vector_table_address()
 {
   // Relocate the interrupt vector table the vector buffer. By default this
   // will be set to the address of the start of flash memory for the MCU.
-  return reinterpret_cast<void*>(scb->vtor);
+  return reinterpret_cast<void*>(scb->vtor);  // NOLINT
 }
 
 void reset()
