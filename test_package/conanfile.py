@@ -37,7 +37,7 @@ class TestPackageConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(variables={"BAREMETAL": self._bare_metal})
+        cmake.configure()
         cmake.build()
 
     def test(self):

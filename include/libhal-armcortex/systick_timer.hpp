@@ -81,10 +81,10 @@ public:
   ~systick_timer();
 
 private:
-  result<is_running_t> driver_is_running() override;
-  result<cancel_t> driver_cancel() override;
-  result<schedule_t> driver_schedule(hal::callback<void(void)> p_callback,
-                                     hal::time_duration p_delay) override;
+  is_running_t driver_is_running() override;
+  cancel_t driver_cancel() override;
+  schedule_t driver_schedule(hal::callback<void(void)> p_callback,
+                             hal::time_duration p_delay) override;
 
   hertz m_frequency = 1'000'000.0f;
 };

@@ -42,18 +42,18 @@ ENTRY(_start)
 
 MEMORY
 {
-  flash (rxai!w) : ORIGIN = DEFINED(__flash) ? __flash : 0x10000000, LENGTH = DEFINED(__flash_size) ? __flash_size : 0x10000
-  ram (wxa!ri)   : ORIGIN = DEFINED(__ram  ) ? __ram   : 0x20000000, LENGTH = DEFINED(__ram_size  ) ? __ram_size   : 0x08000
+  flash : ORIGIN = __flash, LENGTH = __flash_size
+  ram : ORIGIN = __ram, LENGTH = __ram_size
 }
 
 ENTRY(_start)
 
 PHDRS
 {
-  text PT_LOAD;
-  ram PT_LOAD;
-  ram_init PT_LOAD;
-  tls PT_TLS;
+  text PT_LOAD FLAGS(5);
+  ram PT_LOAD FLAGS(6);
+  ram_init PT_LOAD FLAGS(6);
+  tls PT_TLS FLAGS(6);
 }
 
 SECTIONS

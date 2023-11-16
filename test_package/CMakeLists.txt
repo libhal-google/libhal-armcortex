@@ -20,4 +20,15 @@ find_package(libhal-armcortex CONFIG REQUIRED)
 add_executable(test_package main.cpp)
 target_include_directories(test_package PUBLIC .)
 target_compile_features(test_package PRIVATE cxx_std_20)
+
+if(${CMAKE_CROSSCOMPILING})
+target_link_options(test_package PRIVATE
+  --crt0=minimal
+  -T${CMAKE_SOURCE_DIR}/linker.ld
+  -Wl,--wrap=__cxa_allocate_exception
+  -Wl,--wrap=__cxa_free_exception
+  -Wl,--wrap=__cxa_call_unexpected
+)
+endif()
+
 target_link_libraries(test_package PRIVATE libhal::armcortex)
