@@ -4,56 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  cortex-m0:
-    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+  deploy:
+    uses: ./.github/workflows/deploy-version.yml
     with:
-      arch: cortex-m0
       version: 3.0.0-alpha.1
-      os: baremetal
-      compiler_package: arm-gnu-toolchain
-    secrets: inherit
-
-  cortex-m0plus:
-    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
-    with:
-      arch: cortex-m0plus
-      version: 3.0.0-alpha.1
-      os: baremetal
-      compiler_package: arm-gnu-toolchain
-    secrets: inherit
-
-  cortex-m1:
-    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
-    with:
-      arch: cortex-m1
-      version: 3.0.0-alpha.1
-      os: baremetal
-      compiler_package: arm-gnu-toolchain
-    secrets: inherit
-
-  cortex-m3:
-    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
-    with:
-      arch: cortex-m3
-      version: 3.0.0-alpha.1
-      os: baremetal
-      compiler_package: arm-gnu-toolchain
-    secrets: inherit
-
-  cortex-m4:
-    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
-    with:
-      arch: cortex-m4
-      version: 3.0.0-alpha.1
-      os: baremetal
-      compiler_package: arm-gnu-toolchain
-    secrets: inherit
-
-  cortex-m4f:
-    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
-    with:
-      arch: cortex-m4f
-      version: 3.0.0-alpha.1
-      os: baremetal
-      compiler_package: arm-gnu-toolchain
     secrets: inherit

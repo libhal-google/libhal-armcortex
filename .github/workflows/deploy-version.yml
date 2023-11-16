@@ -1,0 +1,75 @@
+name: 🚀 Deploy Version
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+
+jobs:
+  cortex-m0:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+    with:
+      arch: cortex-m0
+      version: ${{ inputs.version }}
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
+    secrets: inherit
+
+  cortex-m0plus:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+    with:
+      arch: cortex-m0plus
+      version: ${{ inputs.version }}
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
+    secrets: inherit
+
+  cortex-m1:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+    with:
+      arch: cortex-m1
+      version: ${{ inputs.version }}
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
+    secrets: inherit
+
+  cortex-m3:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+    with:
+      arch: cortex-m3
+      version: ${{ inputs.version }}
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
+    secrets: inherit
+
+  cortex-m4:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+    with:
+      arch: cortex-m4
+      version: ${{ inputs.version }}
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
+    secrets: inherit
+
+  cortex-m4f:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
+    with:
+      arch: cortex-m4f
+      version: ${{ inputs.version }}
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
+    secrets: inherit

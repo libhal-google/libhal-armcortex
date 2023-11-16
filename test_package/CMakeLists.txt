@@ -18,6 +18,5 @@ project(test_package LANGUAGES CXX)
 find_package(libhal-armcortex CONFIG REQUIRED)
 
 add_executable(test_package main.cpp)
-target_include_directories(test_package PUBLIC .)
 target_compile_features(test_package PRIVATE cxx_std_20)
 target_link_libraries(test_package PRIVATE libhal::armcortex)

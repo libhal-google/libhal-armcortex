@@ -12,17 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
+#include <exception>
+#include <span>
+
 #include <libhal-armcortex/dwt_counter.hpp>
+
+// Demonstrate function that throws
+void foo()
+{
+  // volatile integer used to keep
+  static volatile int a = 0;
+  a = a + 1;
+  throw 5;
+}
 
 int main()
 {
-  hal::cortex_m::dwt_counter counter(1'000'000.0f);
-  return counter.uptime().ticks;
-}
+  try {
+    hal::cortex_m::dwt_counter counter(1'000'000.0f);
+    counter.uptime().ticks;
+  } catch (...) {
+    std::terminate();
+  }
+  try {
+    foo();
+  } catch (...) {
+    std::terminate();
+  }
 
-namespace boost {
-void throw_exception(std::exception const& e)
-{
-  hal::halt();
+  return 0;
 }
-}  // namespace boost

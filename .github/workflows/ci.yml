@@ -3,61 +3,25 @@ name: ✅ CI
 on:
   workflow_dispatch:
   pull_request:
-  release:
-    types:
-      - published
-      - deleted
   push:
     branches:
       - main
+      # Remove before merging with main
+      - exceptions
   schedule:
     - cron: "0 12 * * 0"
 
 jobs:
   ci:
-    uses: libhal/ci/.github/workflows/library.yml@4.x.y
-    with:
-      library: libhal-armcortex
+    uses: libhal/ci/.github/workflows/library_check.yml@5.x.y
     secrets: inherit
 
-  cortex-m0:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@4.x.y
+  test-cortex-m0:
+    uses: libhal/ci/.github/workflows/deploy.yml@5.x.y
     with:
-      profile: cortex-m0
-      upload: true
-    secrets: inherit
-
-  cortex-m0plus:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@4.x.y
-    with:
-      profile: cortex-m0plus
-      upload: true
-    secrets: inherit
-
-  cortex-m1:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@4.x.y
-    with:
-      profile: cortex-m1
-      upload: true
-    secrets: inherit
-
-  cortex-m3:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@4.x.y
-    with:
-      profile: cortex-m3
-      upload: true
-    secrets: inherit
-
-  cortex-m4:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@4.x.y
-    with:
-      profile: cortex-m4
-      upload: true
-    secrets: inherit
-
-  cortex-m4f:
-    uses: libhal/ci/.github/workflows/platform_deploy.yml@4.x.y
-    with:
-      profile: cortex-m4f
-      upload: true
+      arch: cortex-m0
+      os: baremetal
+      compiler: gcc
+      compiler_version: 12.3
+      compiler_package: arm-gnu-toolchain
     secrets: inherit
