@@ -26,7 +26,7 @@ required_conan_version = ">=2.0.6"
 
 class libhal_arm_cortex_conan(ConanFile):
     name = "libhal-armcortex"
-    version = "2.2.0"
+    version = "2.2.1"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://libhal.github.io/libhal-armcortex"
@@ -63,12 +63,12 @@ class libhal_arm_cortex_conan(ConanFile):
 
     def build_requirements(self):
         self.tool_requires("cmake/3.27.1")
-        self.tool_requires("libhal-cmake-util/3.0.0")
+        self.tool_requires("libhal-cmake-util/3.0.1")
         self.test_requires("boost-ext-ut/1.1.9")
 
     def requirements(self):
-        self.requires("libhal/[^2.0.1]")
-        self.requires("libhal-util/[^3.0.0]")
+        self.requires("libhal/[^2.0.3]", transitive_headers=True)
+        self.requires("libhal-util/[^3.0.1]")
 
     def layout(self):
         cmake_layout(self)
